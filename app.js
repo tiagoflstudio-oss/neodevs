@@ -41,10 +41,24 @@ const Auth = {
 
   async login(e) {
     e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
     const senha = document.getElementById('login-password').value;
+    
+    Toast.show('Verificando credenciais...', 'info');
+    
     const user = await SupaDB.findUser(email);
-    if (!user || user.senha !== senha) { Toast.show('Email ou senha incorretos', 'error'); return; }
+    if (!user) { 
+      Toast.show('Email ou senha incorretos', 'error'); 
+      return; 
+    }
+    
+    // Verifica senha (compatível com texto puro e hash)
+    const senhaHash = hashSenha(senha);
+    if (user.senha !== senha && user.senha !== senhaHash) { 
+      Toast.show('Email ou senha incorretos', 'error'); 
+      return; 
+    }
+    
     this.currentUser = user;
     SupaDB.setSessao(user.id);
     Toast.show('Bem-vindo de volta, ' + user.nome.split(' ')[0] + '! 👋', 'success');
@@ -54,14 +68,57 @@ const Auth = {
   async register(e) {
     e.preventDefault();
     const nome = document.getElementById('reg-nome').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
     const senha = document.getElementById('reg-password').value;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Toast.show('Email inválido', 'error');
+      return;
+    }
+    
+    if (senha.length < 6 || senha.length > 12) {
+      Toast.show('Senha deve ter entre 6 e 12 caracteres', 'error');
+      return;
+    }
+    if (!/[A-Z]/.test(senha)) {
+      Toast.show('Senha deve ter pelo menos 1 letra maiúscula', 'error');
+      return;
+    }
+    if (!/[0-9]/.test(senha)) {
+      Toast.show('Senha deve ter pelo menos 1 número', 'error');
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(senha)) {
+      Toast.show('Senha deve ter pelo menos 1 caractere especial', 'error');
+      return;
+    }
+    
+    Toast.show('Verificando email...', 'info');
+    
     const existing = await SupaDB.findUser(email);
     if (existing) { Toast.show('Este email já está cadastrado', 'error'); return; }
-    const user = { id: SupaDB.uid(), nome, email, senha, avatar: '🧑‍💻', criado_em: SupaDB.now() };
-    await SupaDB.addUser(user);
-    this.currentUser = user;
-    SupaDB.setSessao(user.id);
+    
+    // Armazena senha com hash (não texto puro!)
+    const user = { 
+      id: SupaDB.uid(), 
+      nome, 
+      email, 
+      senha: hashSenha(senha), // ← Hash da senha
+      avatar: '🧑‍💻', 
+      criado_em: SupaDB.now() 
+    };
+    
+    Toast.show('Criando conta...', 'info');
+    
+    const result = await SupaDB.addUser(user);
+    if (!result || result.error) { 
+      Toast.show(result?.error || 'Erro ao criar conta. Tente novamente.', 'error'); 
+      return; 
+    }
+    
+    this.currentUser = result;
+    SupaDB.setSessao(result.id);
     Toast.show('Conta criada! Bem-vindo, ' + nome.split(' ')[0] + '! 🎉', 'success');
     await this.showApp();
   },
@@ -906,7 +963,7 @@ const PerfilCtrl = {
       <form class="modal-form" onsubmit="PerfilCtrl.salvar(event)">
         <div class="form-group"><label>Nome *</label><input id="pf-nome" value="${escHtml(u.nome)}" required></div>
         <div class="form-group"><label>Email *</label><input type="email" id="pf-email" value="${escHtml(u.email)}" required></div>
-        <div class="form-group"><label>Nova Senha (deixar em branco para manter)</label><input type="password" id="pf-senha" placeholder="Nova senha..." minlength="6"></div>
+        <div class="form-group"><label>Nova Senha (deixar em branco para manter)</label><div style="position:relative"><input type="password" id="pf-senha" placeholder="Nova senha..." minlength="6" style="padding-right:40px"><span onclick="document.getElementById('pf-senha').type = document.getElementById('pf-senha').type === 'password' ? 'text' : 'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span></div></div>
         <div class="modal-actions">
           <button type="button" class="btn btn-ghost" onclick="Modal.close()">Cancelar</button>
           <button type="submit" class="btn btn-primary">Salvar</button>
@@ -918,14 +975,32 @@ const PerfilCtrl = {
     e.preventDefault();
     const u = { ...Auth.currentUser };
     u.nome = document.getElementById('pf-nome').value.trim();
-    u.email = document.getElementById('pf-email').value.trim();
+    u.email = document.getElementById('pf-email').value.trim().toLowerCase();
     const nova = document.getElementById('pf-senha').value;
     const existente = await SupaDB.findUser(u.email);
     if (existente && existente.id !== u.id) {
       Toast.show('Este email já está sendo utilizado', 'error');
       return;
     }
-    if (nova) u.senha = nova;
+    if (nova) {
+      if (nova.length < 6 || nova.length > 12) {
+        Toast.show('Senha deve ter entre 6 e 12 caracteres', 'error');
+        return;
+      }
+      if (!/[A-Z]/.test(nova)) {
+        Toast.show('Senha deve ter pelo menos 1 letra maiúscula', 'error');
+        return;
+      }
+      if (!/[0-9]/.test(nova)) {
+        Toast.show('Senha deve ter pelo menos 1 número', 'error');
+        return;
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(nova)) {
+        Toast.show('Senha deve ter pelo menos 1 caractere especial', 'error');
+        return;
+      }
+      u.senha = hashSenha(nova); // ← Hash da nova senha
+    }
     await SupaDB.updateUser(u);
     Auth.currentUser = u;
     SupaDB.setSessao(u.id);

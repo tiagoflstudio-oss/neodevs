@@ -1,5 +1,6 @@
 -- ============================================================
 -- DevHub — Script SQL para Supabase
+-- Projeto: wipwvjuikcmsmpvqedis
 -- Copie e cole no SQL Editor do Supabase
 -- ============================================================
 
