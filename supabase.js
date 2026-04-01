@@ -121,15 +121,152 @@ const SupaDB = {
     }
   },
 
+  // ── EQUIPES ──
+  async getEquipe(id) {
+    try {
+      const data = await supabaseFetch('equipes?id=eq.' + encodeURIComponent(id) + '&select=*');
+      return data[0] || null;
+    } catch (e) {
+      console.error('Erro ao buscar equipe:', e.message);
+      return null;
+    }
+  },
+
+  async getMinhasEquipes(userId) {
+    try {
+      // Equipes onde é dono OU membro (via usuario.equipe_id)
+      const data = await supabaseFetch('equipes?or=(dono_id.eq.' + userId + ',id.in.(SELECT equipe_id FROM usuarios WHERE id=' + userId + '))&select=*');
+      return data;
+    } catch (e) {
+      console.error('Erro ao buscar equipes:', e.message);
+      return [];
+    }
+  },
+
+  async createEquipe(equipe) {
+    try {
+      return await supabaseFetch('equipes', {
+        method: 'POST',
+        body: JSON.stringify([equipe])
+      }).then(d => d[0]);
+    } catch (e) {
+      console.error('Erro ao criar equipe:', e.message);
+      return { error: e.message };
+    }
+  },
+
+  async updateEquipe(equipe) {
+    try {
+      return await supabaseFetch('equipes?id=eq.' + equipe.id, {
+        method: 'PATCH',
+        body: JSON.stringify(equipe)
+      }).then(d => d[0]);
+    } catch (e) {
+      console.error('Erro ao atualizar equipe:', e.message);
+      return null;
+    }
+  },
+
+  async findEquipeByCodigo(codigo) {
+    try {
+      const data = await supabaseFetch('equipes?codigo_convite=eq.' + encodeURIComponent(codigo) + '&select=*');
+      return data[0] || null;
+    } catch (e) {
+      console.error('Erro ao buscar equipe:', e.message);
+      return null;
+    }
+  },
+
+  async getMembrosEquipe(equipeId) {
+    try {
+      const data = await supabaseFetch('usuarios?equipe_id=eq.' + encodeURIComponent(equipeId) + '&select=*');
+      return data;
+    } catch (e) {
+      console.error('Erro ao buscar membros:', e.message);
+      return [];
+    }
+  },
+
+  // ── CONVITES ──
+  async createConvite(convite) {
+    try {
+      return await supabaseFetch('convites', {
+        method: 'POST',
+        body: JSON.stringify([convite])
+      }).then(d => d[0]);
+    } catch (e) {
+      console.error('Erro ao criar convite:', e.message);
+      return { error: e.message };
+    }
+  },
+
+  async getConvitesPorEquipe(equipeId) {
+    try {
+      return await supabaseFetch('convites?equipe_id=eq.' + encodeURIComponent(equipeId) + '&select=*,convidado_por_data:convidado(*)');
+    } catch (e) {
+      console.error('Erro ao buscar convites:', e.message);
+      return [];
+    }
+  },
+
+  async getMeusConvites(email) {
+    try {
+      return await supabaseFetch('convites?email=eq.' + encodeURIComponent(email) + '&status=eq.pendente&select=*,equipe:equipe_id(*)');
+    } catch (e) {
+      console.error('Erro ao buscar convites:', e.message);
+      return [];
+    }
+  },
+
+  async aceitarConvite(conviteId, userId) {
+    try {
+      // Busca o convite
+      const convites = await supabaseFetch('convites?id=eq.' + encodeURIComponent(conviteId) + '&select=*');
+      const convite = convites[0];
+      if (!convite) throw new Error('Convite não encontrado');
+
+      // Atualiza status do convite
+      await supabaseFetch('convites?id=eq.' + conviteId, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'aceito' })
+      });
+
+      // Adiciona usuário na equipe
+      await supabaseFetch('usuarios?id=eq.' + userId, {
+        method: 'PATCH',
+        body: JSON.stringify({ equipe_id: convite.equipe_id })
+      });
+
+      return convite.equipe_id;
+    } catch (e) {
+      console.error('Erro ao aceitar convite:', e.message);
+      return null;
+    }
+  },
+
+  async recusarConvite(conviteId) {
+    try {
+      await supabaseFetch('convites?id=eq.' + conviteId, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'recusado' })
+      });
+      return true;
+    } catch (e) {
+      console.error('Erro ao recusar convite:', e.message);
+      return false;
+    }
+  },
+
   // ── SESSÃO ──
   getSessao() { return localStorage.getItem('devhub_session'); },
   setSessao(userId) { localStorage.setItem('devhub_session', userId); },
   clearSessao() { localStorage.removeItem('devhub_session'); },
 
   // ── IDEIAS ──
-  async getIdeias() {
+  async getIdeias(equipeId) {
     try {
-      return await supabaseFetch('ideias?select=*&order=criado_em.desc');
+      const filter = equipeId ? 'equipe_id=eq.' + encodeURIComponent(equipeId) + '&' : '';
+      return await supabaseFetch('ideias?' + filter + 'select=*&order=criado_em.desc');
     } catch (e) { console.error('Erro ao buscar ideias:', e.message); return []; }
   },
 
@@ -159,9 +296,10 @@ const SupaDB = {
   },
 
   // ── PROJETOS ──
-  async getProjetos() {
+  async getProjetos(equipeId) {
     try {
-      return await supabaseFetch('projetos?select=*&order=criado_em.desc');
+      const filter = equipeId ? 'equipe_id=eq.' + encodeURIComponent(equipeId) + '&' : '';
+      return await supabaseFetch('projetos?' + filter + 'select=*&order=criado_em.desc');
     } catch (e) { console.error('Erro ao buscar projetos:', e.message); return []; }
   },
 
@@ -191,9 +329,10 @@ const SupaDB = {
   },
 
   // ── TAREFAS ──
-  async getTarefas() {
+  async getTarefas(equipeId) {
     try {
-      return await supabaseFetch('tarefas?select=*&order=criado_em.desc');
+      const filter = equipeId ? 'equipe_id=eq.' + encodeURIComponent(equipeId) + '&' : '';
+      return await supabaseFetch('tarefas?' + filter + 'select=*&order=criado_em.desc');
     } catch (e) { console.error('Erro ao buscar tarefas:', e.message); return []; }
   },
 
@@ -223,9 +362,10 @@ const SupaDB = {
   },
 
   // ── SERVIÇOS ──
-  async getServicos() {
+  async getServicos(equipeId) {
     try {
-      return await supabaseFetch('servicos?select=*&order=criado_em.desc');
+      const filter = equipeId ? 'equipe_id=eq.' + encodeURIComponent(equipeId) + '&' : '';
+      return await supabaseFetch('servicos?' + filter + 'select=*&order=criado_em.desc');
     } catch (e) { console.error('Erro ao buscar serviços:', e.message); return []; }
   },
 

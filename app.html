@@ -82,6 +82,10 @@
         <span class="nav-icon">📊</span>
         <span class="nav-label">Dashboard</span>
       </a>
+      <a href="#equipe" class="nav-item" data-route="equipe">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Equipe</span>
+      </a>
       <a href="#ideias" class="nav-item" data-route="ideias">
         <span class="nav-icon">💡</span>
         <span class="nav-label">Ideias</span>
@@ -121,6 +125,7 @@
         <input type="text" id="global-search" placeholder="Buscar ideias, projetos, tarefas..." oninput="handleSearch(this.value)">
       </div>
       <div class="topbar-right">
+        <div id="topbar-team" class="topbar-team" onclick="Router.navigate('equipe')" style="display:none;font-size:13px;color:var(--muted);cursor:pointer;padding:6px 12px;background:rgba(255,255,255,.05);border-radius:20px;border:1px solid var(--border)">Sem equipe</div>
         <div class="user-chip" onclick="Router.navigate('perfil')">
           <span id="topbar-avatar">🧑‍💻</span>
           <span id="topbar-name">Dev</span>

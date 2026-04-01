@@ -7,12 +7,20 @@
    ────────────────────────────────────────────── */
 const Auth = {
   currentUser: null,
+  currentEquipe: null,
 
   async init() {
     const sid = SupaDB.getSessao();
     if (sid) {
       this.currentUser = await SupaDB.getUser(sid);
-      if (this.currentUser) { await this.showApp(); return; }
+      if (this.currentUser) {
+        // Carrega equipe do usuário
+        if (this.currentUser.equipe_id) {
+          this.currentEquipe = await SupaDB.getEquipe(this.currentUser.equipe_id);
+        }
+        await this.showApp();
+        return;
+      }
     }
     this.showAuth();
   },
@@ -28,8 +36,29 @@ const Auth = {
     document.getElementById('app-shell').classList.remove('hidden');
     document.getElementById('topbar-avatar').textContent = this.currentUser.avatar;
     document.getElementById('topbar-name').textContent = this.currentUser.nome.split(' ')[0];
+    
+    // Mostra equipe no topbar
+    const topbarTeam = document.getElementById('topbar-team');
+    if (topbarTeam) {
+      if (this.currentEquipe) {
+        topbarTeam.textContent = '👥 ' + this.currentEquipe.nome;
+        topbarTeam.style.display = 'inline';
+      } else {
+        topbarTeam.textContent = 'Sem equipe';
+        topbarTeam.style.display = 'inline';
+      }
+    }
+    
     stopThreeBg();
     await Router.init();
+    
+    // Verifica convites pendentes
+    setTimeout(async () => {
+      const convites = await EquipeCtrl.verMeusConvites();
+      if (convites.length > 0) {
+        Toast.show('Você tem ' + convites.length + ' convite(s) pendente(s)!', 'info');
+      }
+    }, 1500);
   },
 
   showTab(tab) {
@@ -171,7 +200,8 @@ const Router = {
       projetos: Views.projetos,
       tarefas: Views.tarefas,
       servicos: Views.servicos,
-      perfil: Views.perfil
+      perfil: Views.perfil,
+      equipe: Views.equipe
     };
     const fn = views[route];
     if (fn) await fn(); else mc.innerHTML = '<p style="padding:40px;color:var(--muted)">Página não encontrada.</p>';
@@ -220,10 +250,11 @@ const Views = {
 
   /* ── DASHBOARD ── */
   async dashboard() {
-    const ideias = await SupaDB.getIdeias();
-    const projetos = await SupaDB.getProjetos();
-    const tarefas = await SupaDB.getTarefas();
-    const servicos = await SupaDB.getServicos();
+    const equipeId = Auth.currentEquipe?.id;
+    const ideias = await SupaDB.getIdeias(equipeId);
+    const projetos = await SupaDB.getProjetos(equipeId);
+    const tarefas = await SupaDB.getTarefas(equipeId);
+    const servicos = await SupaDB.getServicos(equipeId);
     const ativos = projetos.filter(p => p.status === 'em-andamento').length;
     const pendentes = tarefas.filter(t => t.status === 'pendente' || t.status === 'em-andamento').length;
     const concluidas = tarefas.filter(t => t.status === 'concluida').length;
@@ -332,7 +363,7 @@ const Views = {
 
   /* ── IDEIAS ── */
   async ideias() {
-    const ideias = await SupaDB.getIdeias();
+    const ideias = await SupaDB.getIdeias(Auth.currentEquipe?.id);
     const cols = [
       { key: 'rascunho', label: 'Rascunho' },
       { key: 'em-analise', label: 'Em Análise' },
@@ -387,7 +418,7 @@ const Views = {
 
   /* ── PROJETOS ── */
   async projetos(filtro) {
-    const todos = await SupaDB.getProjetos();
+    const todos = await SupaDB.getProjetos(Auth.currentEquipe?.id);
     const f = filtro || 'todos';
     const lista = f === 'todos' ? todos : todos.filter(p => p.status === f);
     const statusOpts = ['todos', 'planejamento', 'em-andamento', 'pausado', 'concluido'];
@@ -432,8 +463,9 @@ const Views = {
 
   /* ── TAREFAS ── */
   async tarefas(filtroProj) {
-    const tarefas = await SupaDB.getTarefas();
-    const projetos = await SupaDB.getProjetos();
+    const equipeId = Auth.currentEquipe?.id;
+    const tarefas = await SupaDB.getTarefas(equipeId);
+    const projetos = await SupaDB.getProjetos(equipeId);
     const fp = filtroProj || 'todos';
     const lista = fp === 'todos' ? tarefas : tarefas.filter(t => t.projeto_id === fp);
 
@@ -498,7 +530,7 @@ const Views = {
 
   /* ── SERVIÇOS ── */
   async servicos(filtro) {
-    const servicos = await SupaDB.getServicos();
+    const servicos = await SupaDB.getServicos(Auth.currentEquipe?.id);
     const f = filtro || 'todos';
     const lista = f === 'todos' ? servicos : servicos.filter(s => s.categoria === f);
     const catOpts = ['todos', 'desenvolvimento', 'consultoria', 'design', 'infraestrutura', 'suporte'];
@@ -570,6 +602,86 @@ const Views = {
           ${avatares.map(av => `<button onclick="PerfilCtrl.setAvatar('${av}')" style="font-size:28px;background:${av === u.avatar ? 'rgba(0,212,255,.15)' : 'rgba(255,255,255,.05)'};border:1px solid ${av === u.avatar ? 'rgba(0,212,255,.4)' : 'var(--border)'};border-radius:12px;padding:10px 14px;cursor:pointer;transition:.2s">${av}</button>`).join('')}
         </div>
       </div>`;
+  },
+
+  /* ── EQUIPE ── */
+  async equipe() {
+    const u = Auth.currentUser;
+    const equipe = Auth.currentEquipe;
+    
+    // Se não tem equipe
+    if (!equipe) {
+      document.getElementById('main-content').innerHTML = `
+        <div class="no-equipe">
+          <div class="no-equipe-icon">👥</div>
+          <h2>Você não está em uma equipe</h2>
+          <p>Crie sua própria equipe ou entre em uma existente usando um código de convite</p>
+          <div class="no-equipe-actions">
+            <button class="btn btn-primary" onclick="EquipeCtrl.showCriarEquipe()">+ Criar Equipe</button>
+            <button class="btn btn-ghost" onclick="EquipeCtrl.showEntrarEquipe()">Entrar com Código</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const membros = await EquipeCtrl.getMembros();
+    const isDono = equipe.dono_id === u.id;
+    const convites = isDono ? await EquipeCtrl.verConvites() : [];
+    const convitesPendentes = convites.filter(c => c.status === 'pendente');
+
+    document.getElementById('main-content').innerHTML = `
+      <div class="page-header">
+        <h1 class="page-title">👥 Equipe</h1>
+        ${isDono ? '<button class="btn btn-primary" onclick="EquipeCtrl.showConvidar()">+ Convidar Membro</button>' : ''}
+      </div>
+      
+      <div class="equipe-header">
+        <div class="equipe-logo">👥</div>
+        <div class="equipe-info">
+          <h2>${escHtml(equipe.nome)}</h2>
+          <p>${escHtml(equipe.descricao) || 'Sem descrição'}</p>
+          ${isDono ? `
+            <div class="equipe-codigo" onclick="navigator.clipboard.writeText('${equipe.codigo_convite}');Toast.show('Código copiado!','success')">
+              ${equipe.codigo_convite}
+              <small>copiar</small>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      ${convitesPendentes.length > 0 ? `
+        <div class="card" style="margin-bottom:22px">
+          <div class="section-title">📬 Convites Pendentes (${convitesPendentes.length})</div>
+          <p style="color:var(--muted);font-size:13px">Convites aguardando resposta</p>
+        </div>
+      ` : ''}
+
+      <div class="card">
+        <div class="section-title">
+          Membros (${membros.length})
+          ${isDono ? '<span style="font-size:12px;color:var(--primary);cursor:pointer" onclick="EquipeCtrl.showConvidar()">+ Convidar</span>' : ''}
+        </div>
+        <div class="membros-grid" style="margin-top:16px">
+          ${membros.map(m => `
+            <div class="membro-card">
+              <div class="membro-avatar">${m.avatar}</div>
+              <div>
+                <div class="membro-nome">${escHtml(m.nome)}</div>
+                <div class="membro-email">${escHtml(m.email)}</div>
+                ${m.id === equipe.dono_id ? '<span class="membro-role">👑 Dono</span>' : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      ${!isDono ? `
+        <div style="margin-top:22px;text-align:center">
+          <button class="btn btn-danger" onclick="if(confirm('Tem certeza que deseja sair da equipe?')) EquipeCtrl.sairEquipe()">Sair da Equipe</button>
+        </div>
+      ` : ''}
+    `;
   },
 };
 
@@ -741,6 +853,293 @@ const CardViewer = {
 };
 
 /* ──────────────────────────────────────────────
+   EQUIPE CONTROLLER
+   ────────────────────────────────────────────── */
+const EquipeCtrl = {
+  // Criar nova equipe
+  async criarEquipe(nome, descricao) {
+    const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const equipe = {
+      id: SupaDB.uid(),
+      nome: nome,
+      descricao: descricao || '',
+      dono_id: Auth.currentUser.id,
+      codigo_convite: codigo,
+      criado_em: SupaDB.now()
+    };
+    
+    const result = await SupaDB.createEquipe(equipe);
+    if (result && !result.error) {
+      // Adiciona usuário à equipe
+      await SupaDB.updateUser({
+        id: Auth.currentUser.id,
+        equipe_id: equipe.id
+      });
+      Auth.currentUser.equipe_id = equipe.id;
+      Auth.currentEquipe = equipe;
+      Toast.show('Equipe criada com sucesso!', 'success');
+      return equipe;
+    }
+    Toast.show(result?.error || 'Erro ao criar equipe', 'error');
+    return null;
+  },
+
+  // Entrar com código de convite
+  async entrarComCodigo(codigo) {
+    const equipe = await SupaDB.findEquipeByCodigo(codigo);
+    if (!equipe) {
+      Toast.show('Código de convite inválido', 'error');
+      return false;
+    }
+    
+    // Verifica se já está em outra equipe
+    if (Auth.currentUser.equipe_id) {
+      Toast.show('Você já pertence a uma equipe. Saia primeiro.', 'error');
+      return false;
+    }
+
+    await SupaDB.updateUser({
+      id: Auth.currentUser.id,
+      equipe_id: equipe.id
+    });
+    Auth.currentUser.equipe_id = equipe.id;
+    Auth.currentEquipe = equipe;
+    Toast.show('Você entrou na equipe ' + equipe.nome + '!', 'success');
+    return true;
+  },
+
+  // Sair da equipe
+  async sairEquipe() {
+    if (!Auth.currentEquipe) return;
+    if (Auth.currentEquipe.dono_id === Auth.currentUser.id) {
+      Toast.show('O dono não pode sair da equipe. Transfira a propriedade primeiro.', 'error');
+      return;
+    }
+    
+    await SupaDB.updateUser({
+      id: Auth.currentUser.id,
+      equipe_id: null
+    });
+    Auth.currentUser.equipe_id = null;
+    Auth.currentEquipe = null;
+    Toast.show('Você saiu da equipe', 'info');
+    await Router.render(Router.current);
+  },
+
+  // Convidar membro
+  async convidar(email) {
+    if (!Auth.currentEquipe) {
+      Toast.show('Você precisa estar em uma equipe', 'error');
+      return false;
+    }
+    
+    // Verifica se é dono
+    if (Auth.currentEquipe.dono_id !== Auth.currentUser.id) {
+      Toast.show('Apenas o dono pode convidar membros', 'error');
+      return false;
+    }
+
+    // Verifica se email já é membro
+    const existing = await SupaDB.findUser(email);
+    if (existing && existing.equipe_id === Auth.currentEquipe.id) {
+      Toast.show('Este usuário já está na equipe', 'error');
+      return false;
+    }
+
+    const convite = {
+      id: SupaDB.uid(),
+      equipe_id: Auth.currentEquipe.id,
+      email: email,
+      convidado_por: Auth.currentUser.id,
+      status: 'pendente',
+      criado_em: SupaDB.now()
+    };
+
+    const result = await SupaDB.createConvite(convite);
+    if (result && !result.error) {
+      Toast.show('Convite enviado para ' + email, 'success');
+      return true;
+    }
+    Toast.show(result?.error || 'Erro ao enviar convite', 'error');
+    return false;
+  },
+
+  // Ver convites da equipe
+  async verConvites() {
+    if (!Auth.currentEquipe) return [];
+    return await SupaDB.getConvitesPorEquipe(Auth.currentEquipe.id);
+  },
+
+  // Ver meus convites pendentes
+  async verMeusConvites() {
+    if (!Auth.currentUser) return [];
+    return await SupaDB.getMeusConvites(Auth.currentUser.email);
+  },
+
+  // Aceitar convite
+  async aceitarConvite(conviteId) {
+    const equipeId = await SupaDB.aceitarConvite(conviteId, Auth.currentUser.id);
+    if (equipeId) {
+      Auth.currentUser.equipe_id = equipeId;
+      Auth.currentEquipe = await SupaDB.getEquipe(equipeId);
+      Toast.show('Você entrou na equipe!', 'success');
+      await Router.render(Router.current);
+    } else {
+      Toast.show('Erro ao aceitar convite', 'error');
+    }
+  },
+
+  // Recusar convite
+  async recusarConvite(conviteId) {
+    await SupaDB.recusarConvite(conviteId);
+    Toast.show('Convite recusado', 'info');
+    await this.mostrarNotificacoes();
+  },
+
+  // Obter membros
+  async getMembros() {
+    if (!Auth.currentEquipe) return [];
+    return await SupaDB.getMembrosEquipe(Auth.currentEquipe.id);
+  },
+
+  // Modal para criar equipe
+  showCriarEquipe() {
+    Modal.open('Criar Equipe', `
+      <form class="modal-form" onsubmit="EquipeCtrl.handleCriarEquipe(event)">
+        <div class="form-group">
+          <label>Nome da Equipe *</label>
+          <input id="eq-nome" required placeholder="Ex: DevHub Team" value="${escHtml(Auth.currentUser?.nome || '')}'s Team">
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea id="eq-desc" placeholder="Descreva o propósito da equipe..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="Modal.close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar Equipe 🚀</button>
+        </div>
+      </form>
+    `);
+  },
+
+  async handleCriarEquipe(e) {
+    e.preventDefault();
+    const nome = document.getElementById('eq-nome').value.trim();
+    const desc = document.getElementById('eq-desc').value.trim();
+    if (!nome) return;
+    
+    const equipe = await this.criarEquipe(nome, desc);
+    if (equipe) {
+      Modal.close();
+      await Router.render(Router.current);
+    }
+  },
+
+  // Modal para entrar com código
+  showEntrarEquipe() {
+    Modal.open('Entrar em Equipe', `
+      <form class="modal-form" onsubmit="EquipeCtrl.handleEntrarCodigo(event)">
+        <div class="form-group">
+          <label>Código de Convite *</label>
+          <input id="eq-codigo" required placeholder="Ex: ABC123" maxlength="6" style="text-transform:uppercase;font-size:20px;letter-spacing:4px;text-align:center">
+        </div>
+        <p style="font-size:13px;color:var(--muted);text-align:center">Peça o código ao dono da equipe</p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="Modal.close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Entrar →</button>
+        </div>
+      </form>
+    `);
+  },
+
+  async handleEntrarCodigo(e) {
+    e.preventDefault();
+    const codigo = document.getElementById('eq-codigo').value.trim().toUpperCase();
+    if (!codigo) return;
+    
+    const success = await this.entrarComCodigo(codigo);
+    if (success) {
+      Modal.close();
+      await Router.render(Router.current);
+    }
+  },
+
+  // Modal para convidar
+  showConvidar() {
+    if (Auth.currentEquipe?.dono_id !== Auth.currentUser.id) {
+      Toast.show('Apenas o dono pode convidar', 'error');
+      return;
+    }
+    
+    Modal.open('Convidar Membro', `
+      <form class="modal-form" onsubmit="EquipeCtrl.handleConvidar(event)">
+        <div class="form-group">
+          <label>Email do desenvolvedor *</label>
+          <input type="email" id="conv-email" required placeholder="dev@exemplo.com">
+        </div>
+        <div class="convite-info" style="background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);border-radius:12px;padding:16px;margin-top:8px">
+          <p style="font-size:13px;color:var(--text);margin-bottom:8px">📋 <strong>Código da equipe:</strong></p>
+          <div style="font-size:24px;font-weight:700;letter-spacing:4px;text-align:center;color:var(--primary)">${Auth.currentEquipe?.codigo_convite || '------'}</div>
+          <p style="font-size:12px;color:var(--dim);margin-top:8px;text-align:center">Ou envie este código para o desenvolvedor entrar manualmente</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="Modal.close()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Enviar Convite 📧</button>
+        </div>
+      </form>
+    `);
+  },
+
+  async handleConvidar(e) {
+    e.preventDefault();
+    const email = document.getElementById('conv-email').value.trim().toLowerCase();
+    if (!email) return;
+    
+    const success = await this.convidar(email);
+    if (success) {
+      Modal.close();
+    }
+  },
+
+  // Notificações de convite
+  async mostrarNotificacoes() {
+    const convites = await this.verMeusConvites();
+    if (convites.length === 0) {
+      Toast.show('Nenhum convite pendente', 'info');
+      return;
+    }
+
+    let html = convites.map(c => `
+      <div class="convite-card">
+        <div class="convite-info-row">
+          <span style="font-size:28px">👥</span>
+          <div>
+            <div style="font-weight:600">${escHtml(c.equipe?.nome || 'Equipe')}</div>
+            <div style="font-size:12px;color:var(--muted)">Convite para entrar na equipe</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="EquipeCtrl.recusarConvite('${c.id}')">Recusar</button>
+          <button class="btn btn-primary btn-sm" onclick="EquipeCtrl.aceitarConvite('${c.id}')">Aceitar ✓</button>
+        </div>
+      </div>
+    `).join('');
+
+    Modal.open('📬 Convites Pendentes (' + convites.length + ')', `
+      <div style="display:flex;flex-direction:column;gap:14px">
+        ${html}
+      </div>
+    `);
+  },
+
+  // Mostrar equipe atual
+  showEquipeAtual() {
+    if (!Auth.currentEquipe) return;
+    Router.navigate('equipe');
+  }
+};
+
+/* ──────────────────────────────────────────────
    TOAST
    ────────────────────────────────────────────── */
 const Toast = {
@@ -759,6 +1158,11 @@ const Toast = {
    ────────────────────────────────────────────── */
 const IdeiaCtrl = {
   novo() {
+    if (!Auth.currentEquipe) {
+      Toast.show('Você precisa estar em uma equipe para criar ideias', 'error');
+      Router.navigate('equipe');
+      return;
+    }
     Modal.open('Nova Ideia', `
       <form class="modal-form" onsubmit="IdeiaCtrl.salvar(event)">
         <div class="form-group"><label>Título *</label><input id="i-titulo" required placeholder="Nome da ideia"></div>
@@ -804,6 +1208,7 @@ const IdeiaCtrl = {
       prioridade: document.getElementById('i-prior').value,
       status: document.getElementById('i-status').value,
       tags, autor_id: Auth.currentUser.id,
+      equipe_id: Auth.currentEquipe?.id || null,
     };
     if (id) {
       await SupaDB.updateIdeia({ id, ...data });
@@ -846,6 +1251,11 @@ const IdeiaCtrl = {
    ────────────────────────────────────────────── */
 const ProjetoCtrl = {
   novo() {
+    if (!Auth.currentEquipe) {
+      Toast.show('Você precisa estar em uma equipe para criar projetos', 'error');
+      Router.navigate('equipe');
+      return;
+    }
     Modal.open('Novo Projeto', `
       <form class="modal-form" onsubmit="ProjetoCtrl.salvar(event)">
         <div class="form-group"><label>Nome *</label><input id="p-titulo" required placeholder="Nome do projeto"></div>
@@ -903,7 +1313,7 @@ const ProjetoCtrl = {
       categoria: document.getElementById('p-cat').value,
       progresso: parseInt(document.getElementById('p-prog').value) || 0,
       prazo: document.getElementById('p-prazo').value || null,
-      equipe: [Auth.currentUser.id],
+      equipe_id: Auth.currentEquipe?.id || null,
     };
     if (id) {
       await SupaDB.updateProjeto({ id, ...data });
@@ -933,7 +1343,12 @@ const ProjetoCtrl = {
    ────────────────────────────────────────────── */
 const TarefaCtrl = {
   async novo() {
-    const projetos = await SupaDB.getProjetos();
+    if (!Auth.currentEquipe) {
+      Toast.show('Você precisa estar em uma equipe para criar tarefas', 'error');
+      Router.navigate('equipe');
+      return;
+    }
+    const projetos = await SupaDB.getProjetos(Auth.currentEquipe?.id);
     const projOpts = projetos.map(p => `<option value="${p.id}">${escHtml(p.titulo)}</option>`).join('');
     Modal.open('Nova Tarefa', `
       <form class="modal-form" onsubmit="TarefaCtrl.salvar(event)">
@@ -992,6 +1407,7 @@ const TarefaCtrl = {
       status: document.getElementById('t-status').value,
       prazo: document.getElementById('t-prazo').value || null,
       responsavel_id: Auth.currentUser.id,
+      equipe_id: Auth.currentEquipe?.id || null,
     };
     if (id) {
       await SupaDB.updateTarefa({ id, ...data });
@@ -1026,6 +1442,11 @@ const TarefaCtrl = {
    ────────────────────────────────────────────── */
 const ServicoCtrl = {
   novo() {
+    if (!Auth.currentEquipe) {
+      Toast.show('Você precisa estar em uma equipe para criar serviços', 'error');
+      Router.navigate('equipe');
+      return;
+    }
     Modal.open('Novo Serviço', `
       <form class="modal-form" onsubmit="ServicoCtrl.salvar(event)">
         <div class="form-group"><label>Título *</label><input id="s-titulo" required placeholder="Nome do serviço"></div>
@@ -1088,6 +1509,7 @@ const ServicoCtrl = {
       preco: document.getElementById('s-preco').value.trim() || 'Sob consulta',
       destaque: document.getElementById('s-destaque').value === 'true',
       recursos,
+      equipe_id: Auth.currentEquipe?.id || null,
     };
     if (id) {
       await SupaDB.updateServico({ id, ...data });

@@ -221,6 +221,34 @@ a{text-decoration:none}
 .viewer-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .viewer-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;padding-top:16px;border-top:1px solid var(--border)}
 
+/* ── EQUIPE ──────────────────────────────────── */
+.equipe-header{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(124,58,237,.08));border:1px solid rgba(0,212,255,.2);border-radius:var(--r);padding:28px;margin-bottom:22px}
+.equipe-logo{width:70px;height:70px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.equipe-info h2{font-size:22px;font-weight:700;margin-bottom:4px}
+.equipe-info p{color:var(--muted);font-size:14px}
+.equipe-codigo{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 16px;margin-top:12px;font-family:monospace;font-size:18px;letter-spacing:3px;color:var(--primary);cursor:pointer;transition:var(--t)}
+.equipe-codigo:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3)}
+.equipe-codigo small{font-size:11px;letter-spacing:0;color:var(--dim);margin-left:4px}
+.membros-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.membro-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;transition:var(--t)}
+.membro-card:hover{border-color:rgba(0,212,255,.2)}
+.membro-avatar{width:44px;height:44px;background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(124,58,237,.2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px}
+.membro-nome{font-size:14px;font-weight:600}
+.membro-email{font-size:12px;color:var(--muted)}
+.membro-role{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(0,212,255,.1);color:var(--primary)}
+.convite-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.convite-info-row{display:flex;align-items:center;gap:12px}
+
+/* ── SEM EQUIPE ──────────────────────────────── */
+.no-equipe{text-align:center;padding:60px 20px}
+.no-equipe-icon{font-size:64px;margin-bottom:20px}
+.no-equipe h2{font-size:24px;font-weight:700;margin-bottom:10px}
+.no-equipe p{color:var(--muted);margin-bottom:30px;max-width:400px;margin-left:auto;margin-right:auto}
+.no-equipe-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+/* ── NOTIFICAÇÃO BADGE ────────────────────────── */
+.notif-badge{background:var(--danger);color:white;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:4px}
+
 /* ── TOAST ────────────────────────────────────── */
 #toast-container{position:fixed;bottom:24px;right:24px;z-index:2000;display:flex;flex-direction:column;gap:9px}
 .toast{background:#1a1a2e;border:1px solid var(--border);border-radius:12px;padding:13px 17px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:9px;min-width:270px;animation:slideLeft .3s ease;box-shadow:0 10px 30px rgba(0,0,0,.4)}
