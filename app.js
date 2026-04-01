@@ -187,8 +187,10 @@ function badge(val, type) {
     planejamento: 'Planejamento', 'em-andamento': 'Em Andamento', pausado: 'Pausado', concluido: 'Concluído',
     rascunho: 'Rascunho', 'em-analise': 'Em Análise', aprovada: 'Aprovada', rejeitada: 'Rejeitada',
     pendente: 'Pendente', revisao: 'Revisão', concluida: 'Concluída',
+    web: 'Web', mobile: 'Mobile', backend: 'Backend', design: 'Design', outro: 'Outro',
   };
-  return `<span class="badge badge-${val}">${labels[val] || val}</span>`;
+  const cls = val.replace(/[^a-z-]/g, '');
+  return `<span class="badge badge-${cls}">${labels[val] || val}</span>`;
 }
 
 function prazoLabel(prazoStr) {
@@ -341,7 +343,7 @@ const Views = {
     function renderCol(col) {
       const items = ideias.filter(i => i.status === col.key);
       const cards = items.map(i => `
-        <div class="k-card" id="kc-${i.id}">
+        <div class="k-card" id="kc-${i.id}" onclick="CardViewer.open('ideia', ${JSON.stringify(i).replace(/"/g, '&quot;')})">
           <div class="k-card-title">${escHtml(i.titulo)}</div>
           <div class="k-card-desc">${escHtml(i.descricao)}</div>
           <div class="k-card-footer">
@@ -349,17 +351,17 @@ const Views = {
               ${badge(i.prioridade)}
               ${(i.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}
             </div>
-            <div style="display:flex;align-items:center;gap:5px">
-              <button class="vote-btn" onclick="IdeiaCtrl.votar('${i.id}')">⬆ ${i.votos || 0}</button>
+            <div style="display:flex;align-items:center;gap:5px" onclick="event.stopPropagation()">
+              <button class="vote-btn" onclick="event.stopPropagation();IdeiaCtrl.votar('${i.id}')">⬆ ${i.votos || 0}</button>
               <div class="k-card-actions">
-                <button class="act-btn" onclick="IdeiaCtrl.edit('${i.id}')">✏️</button>
-                <button class="act-btn del" onclick="IdeiaCtrl.del('${i.id}')">🗑</button>
+                <button class="act-btn" onclick="event.stopPropagation();IdeiaCtrl.edit('${i.id}')">✏️</button>
+                <button class="act-btn del" onclick="event.stopPropagation();IdeiaCtrl.del('${i.id}')">🗑</button>
               </div>
             </div>
           </div>
-          <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
             ${cols.filter(c => c.key !== col.key).map(c => `
-              <button class="move-btn" onclick="IdeiaCtrl.mover('${i.id}','${c.key}')">→ ${c.label}</button>`).join('')}
+              <button class="move-btn" onclick="event.stopPropagation();IdeiaCtrl.mover('${i.id}','${c.key}')">→ ${c.label}</button>`).join('')}
           </div>
         </div>`).join('') || '<p style="color:var(--dim);font-size:13px;text-align:center;padding:20px 0">Sem itens</p>';
       return `
@@ -392,7 +394,7 @@ const Views = {
     const statusLabels = { todos: 'Todos', planejamento: 'Planejamento', 'em-andamento': 'Em Andamento', pausado: 'Pausado', concluido: 'Concluído' };
 
     const cards = lista.map(p => `
-      <div class="proj-card">
+      <div class="proj-card" onclick="CardViewer.open('projeto', ${JSON.stringify(p).replace(/"/g, '&quot;')})">
         <div class="proj-card-top">
           <div>
             <div class="proj-card-name">${escHtml(p.titulo)}</div>
@@ -447,7 +449,7 @@ const Views = {
       const cards = items.map(t => {
         const proj = projetos.find(p => p.id === t.projeto_id);
         return `
-          <div class="k-card">
+          <div class="k-card" onclick="CardViewer.open('tarefa', ${JSON.stringify(t).replace(/"/g, '&quot;')})">
             <div class="k-card-title">${escHtml(t.titulo)}</div>
             <div class="k-card-desc">${escHtml(t.descricao)}</div>
             <div class="k-card-footer">
@@ -456,14 +458,14 @@ const Views = {
                 ${proj ? `<span class="tag">📁 ${escHtml(proj.titulo)}</span>` : ''}
                 ${prazoLabel(t.prazo)}
               </div>
-              <div class="k-card-actions">
-                <button class="act-btn" onclick="TarefaCtrl.edit('${t.id}')">✏️</button>
-                <button class="act-btn del" onclick="TarefaCtrl.del('${t.id}')">🗑</button>
+              <div class="k-card-actions" onclick="event.stopPropagation()">
+                <button class="act-btn" onclick="event.stopPropagation();TarefaCtrl.edit('${t.id}')">✏️</button>
+                <button class="act-btn del" onclick="event.stopPropagation();TarefaCtrl.del('${t.id}')">🗑</button>
               </div>
             </div>
-            <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+            <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
               ${cols.filter(c => c.key !== col.key).map(c => `
-                <button class="move-btn" onclick="TarefaCtrl.mover('${t.id}','${c.key}')">→ ${c.label}</button>`).join('')}
+                <button class="move-btn" onclick="event.stopPropagation();TarefaCtrl.mover('${t.id}','${c.key}')">→ ${c.label}</button>`).join('')}
             </div>
           </div>`;
       }).join('') || '<p style="color:var(--dim);font-size:13px;text-align:center;padding:20px 0">Sem tarefas</p>';
@@ -503,7 +505,7 @@ const Views = {
     const catLabels = { todos: 'Todos', desenvolvimento: 'Desenvolvimento', consultoria: 'Consultoria', design: 'Design', infraestrutura: 'Infraestrutura', suporte: 'Suporte' };
 
     const cards = lista.map(s => `
-      <div class="service-card ${s.destaque ? 'destaque' : ''}">
+      <div class="service-card ${s.destaque ? 'destaque' : ''}" onclick="CardViewer.open('servico', ${JSON.stringify(s).replace(/"/g, '&quot;')})">
         ${s.destaque ? '<div class="service-badge">⭐ Destaque</div>' : ''}
         <div class="service-icon">${s.icone}</div>
         <h3 class="service-title">${escHtml(s.titulo)}</h3>
@@ -513,9 +515,9 @@ const Views = {
         </div>
         <div class="service-footer">
           <span class="service-price">${escHtml(s.preco)}</span>
-          <div class="service-actions">
-            <button class="act-btn" onclick="ServicoCtrl.edit('${s.id}')">✏️</button>
-            <button class="act-btn del" onclick="ServicoCtrl.del('${s.id}')">🗑</button>
+          <div class="service-actions" onclick="event.stopPropagation()">
+            <button class="act-btn" onclick="event.stopPropagation();ServicoCtrl.edit('${s.id}')">✏️</button>
+            <button class="act-btn del" onclick="event.stopPropagation();ServicoCtrl.del('${s.id}')">🗑</button>
           </div>
         </div>
       </div>`).join('');
@@ -583,6 +585,159 @@ const Modal = {
   close() {
     document.getElementById('modal-overlay').classList.add('hidden');
   },
+};
+
+/* ──────────────────────────────────────────────
+   CARD VIEWER - Visualizador de Cards
+   ────────────────────────────────────────────── */
+const CardViewer = {
+  open(type, item) {
+    let content = '';
+    let title = '';
+    
+    switch(type) {
+      case 'ideia':
+        title = '💡 ' + item.titulo;
+        content = this.renderIdeia(item);
+        break;
+      case 'projeto':
+        title = '📁 ' + item.titulo;
+        content = this.renderProjeto(item);
+        break;
+      case 'tarefa':
+        title = '✅ ' + item.titulo;
+        content = this.renderTarefa(item);
+        break;
+      case 'servico':
+        title = '🛠️ ' + item.titulo;
+        content = this.renderServico(item);
+        break;
+    }
+    
+    Modal.open(title, content);
+  },
+  
+  renderIdeia(item) {
+    return `
+      <div class="viewer-section">
+        <div class="viewer-badges">
+          ${badge(item.status)} ${badge(item.prioridade)}
+        </div>
+        <div class="viewer-field">
+          <label>Descrição</label>
+          <p>${escHtml(item.descricao) || '<em style="color:var(--dim)">Sem descrição</em>'}</p>
+        </div>
+        <div class="viewer-field">
+          <label>Tags</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            ${(item.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('') || '<em style="color:var(--dim)">Sem tags</em>'}
+          </div>
+        </div>
+        <div class="viewer-row">
+          <div class="viewer-field">
+            <label>Votos</label>
+            <p>⬆ ${item.votos || 0}</p>
+          </div>
+          <div class="viewer-field">
+            <label>Criado em</label>
+            <p>${formatDate(item.criado_em)}</p>
+          </div>
+        </div>
+        <div class="viewer-actions">
+          <button class="btn btn-ghost" onclick="Modal.close()">Fechar</button>
+          <button class="btn btn-primary" onclick="Modal.close();IdeiaCtrl.edit('${item.id}')">✏️ Editar</button>
+        </div>
+      </div>`;
+  },
+  
+  renderProjeto(item) {
+    return `
+      <div class="viewer-section">
+        <div class="viewer-badges">
+          ${badge(item.status)} ${badge(item.categoria || 'web')}
+        </div>
+        <div class="viewer-field">
+          <label>Descrição</label>
+          <p>${escHtml(item.descricao) || '<em style="color:var(--dim)">Sem descrição</em>'}</p>
+        </div>
+        <div class="viewer-field">
+          <label>Progresso</label>
+          <div class="progress-bar" style="height:8px;margin-top:6px">
+            <div class="progress-fill" style="width:${item.progresso}%"></div>
+          </div>
+          <p style="margin-top:6px;font-size:14px;font-weight:600;color:var(--primary)">${item.progresso}% concluído</p>
+        </div>
+        <div class="viewer-row">
+          <div class="viewer-field">
+            <label>Prazo</label>
+            <p>${item.prazo ? formatDate(item.prazo) : '<em style="color:var(--dim)">Não definido</em>'}</p>
+          </div>
+          <div class="viewer-field">
+            <label>Criado em</label>
+            <p>${formatDate(item.criado_em)}</p>
+          </div>
+        </div>
+        <div class="viewer-actions">
+          <button class="btn btn-ghost" onclick="Modal.close()">Fechar</button>
+          <button class="btn btn-primary" onclick="Modal.close();ProjetoCtrl.edit('${item.id}')">✏️ Editar</button>
+        </div>
+      </div>`;
+  },
+  
+  renderTarefa(item) {
+    return `
+      <div class="viewer-section">
+        <div class="viewer-badges">
+          ${badge(item.status)} ${badge(item.prioridade)}
+        </div>
+        <div class="viewer-field">
+          <label>Descrição</label>
+          <p>${escHtml(item.descricao) || '<em style="color:var(--dim)">Sem descrição</em>'}</p>
+        </div>
+        <div class="viewer-row">
+          <div class="viewer-field">
+            <label>Prazo</label>
+            <p>${item.prazo ? formatDate(item.prazo) : '<em style="color:var(--dim)">Não definido</em>'}</p>
+          </div>
+          <div class="viewer-field">
+            <label>Criado em</label>
+            <p>${formatDate(item.criado_em)}</p>
+          </div>
+        </div>
+        <div class="viewer-actions">
+          <button class="btn btn-ghost" onclick="Modal.close()">Fechar</button>
+          <button class="btn btn-primary" onclick="Modal.close();TarefaCtrl.edit('${item.id}')">✏️ Editar</button>
+        </div>
+      </div>`;
+  },
+  
+  renderServico(item) {
+    return `
+      <div class="viewer-section">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <div class="service-icon" style="width:50px;height:50px;font-size:24px;margin:0">${item.icone}</div>
+          <div>
+            <div style="font-size:12px;color:var(--muted)">${item.categoria}</div>
+            <div style="font-size:14px;font-weight:600;color:var(--primary)">${escHtml(item.preco)}</div>
+          </div>
+        </div>
+        <div class="viewer-field">
+          <label>Descrição</label>
+          <p>${escHtml(item.descricao) || '<em style="color:var(--dim)">Sem descrição</em>'}</p>
+        </div>
+        <div class="viewer-field">
+          <label>Recursos inclusos</label>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:4px">
+            ${(item.recursos || []).map(r => `<li style="font-size:13px;display:flex;align-items:center;gap:6px"><span style="color:var(--success)">✓</span> ${escHtml(r)}</li>`).join('') || '<li style="color:var(--dim)">Sem recursos listados</li>'}
+          </ul>
+        </div>
+        ${item.destaque ? '<div style="background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);border-radius:10px;padding:10px;text-align:center;font-size:13px;color:var(--primary)">⭐ Serviço em Destaque</div>' : ''}
+        <div class="viewer-actions">
+          <button class="btn btn-ghost" onclick="Modal.close()">Fechar</button>
+          <button class="btn btn-primary" onclick="Modal.close();ServicoCtrl.edit('${item.id}')">✏️ Editar</button>
+        </div>
+      </div>`;
+  }
 };
 
 /* ──────────────────────────────────────────────

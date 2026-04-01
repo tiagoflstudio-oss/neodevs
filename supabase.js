@@ -28,10 +28,10 @@ function hashSenha(senha) {
 
 async function supabaseFetch(endpoint, options = {}) {
   const url = SUPABASE_URL + '/rest/v1/' + endpoint;
-  
+
   // Debug: log da URL para verificar conexão
   console.log('[Supabase] Requisição:', endpoint);
-  
+
   let lastError;
   for (let i = 0; i < 3; i++) {
     try {
@@ -39,7 +39,7 @@ async function supabaseFetch(endpoint, options = {}) {
         ...options,
         headers: { ...HEADERS, ...options.headers }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text().catch(() => '');
         console.error('[Supabase] Erro HTTP:', response.status, errorText);
@@ -47,7 +47,7 @@ async function supabaseFetch(endpoint, options = {}) {
         try { error = JSON.parse(errorText); } catch { error = { message: errorText }; }
         throw new Error(error.message || `Erro HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log('[Supabase] Sucesso:', endpoint, data.length || 'ok');
       return data;
