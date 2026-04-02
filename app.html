@@ -12,7 +12,7 @@
 <body>
 
 <!-- ══════════════════════════════════════════
-     AUTH VIEW
+      AUTH VIEW
 ══════════════════════════════════════════ -->
 <div id="auth-view">
   <div id="canvas-bg"></div>
@@ -20,35 +20,47 @@
     <div class="auth-card">
       <div class="auth-logo">DevHub</div>
 
+      <div class="tipo-selector">
+        <button class="tipo-btn active" id="tipo-dev" onclick="Auth.showTipo('dev')">
+          <span class="tipo-icon">💻</span>
+          <span class="tipo-text">Sou Desenvolvedor</span>
+          <span class="tipo-sub">Quero trabalhar em projetos</span>
+        </button>
+        <button class="tipo-btn" id="tipo-cliente" onclick="Auth.showTipo('cliente')">
+          <span class="tipo-icon">🏢</span>
+          <span class="tipo-text">Sou Cliente</span>
+          <span class="tipo-sub">Quero contratar devs</span>
+        </button>
+      </div>
+
       <div class="auth-tabs">
         <button class="auth-tab active" id="tab-login" onclick="Auth.showTab('login')">Entrar</button>
         <button class="auth-tab" id="tab-register" onclick="Auth.showTab('register')">Criar Conta</button>
       </div>
 
       <!-- Login -->
-      <form id="login-form" class="auth-form" onsubmit="Auth.login(event)">
+      <form id="login-form" class="auth-form" data-tipo="dev" onsubmit="Auth.login(event)">
+        <div class="demo-hint" id="login-hint">🔑 Demo Dev: <strong>demo@devhub.com</strong> / <strong>demo123</strong></div>
         <div class="form-group">
           <label>Email</label>
-          <input type="email" id="login-email" placeholder="seu@email.com" required>
+          <input type="email" id="login-email" placeholder="seu@email.com" value="demo@devhub.com" required>
         </div>
         <div class="form-group">
           <label>Senha</label>
-          <div style="position:relative">
-            <input type="password" id="login-password" placeholder="••••••••" required style="padding-right:40px">
-            <span onclick="document.getElementById('login-password').type = document.getElementById('login-password').type === 'password' ? 'text' : 'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span>
-          </div>
+          <input type="password" id="login-password" placeholder="••••••••" value="demo123" required>
         </div>
         <button type="submit" class="btn-auth">Entrar →</button>
-        <p style="text-align:center;margin-top:12px">
-          <a href="#" onclick="Auth.showTab('recover');return false" style="color:var(--accent);font-size:13px">Esqueci minha senha</a>
-        </p>
       </form>
 
       <!-- Register -->
-      <form id="register-form" class="auth-form hidden" onsubmit="Auth.register(event)">
+      <form id="register-form" class="auth-form hidden" data-tipo="dev" onsubmit="Auth.register(event)">
         <div class="form-group">
           <label>Nome completo</label>
           <input type="text" id="reg-nome" placeholder="Seu nome" required>
+        </div>
+        <div class="form-group" id="grp-empresa" style="display:none">
+          <label>Nome da Empresa</label>
+          <input type="text" id="reg-empresa" placeholder="Nome da sua empresa">
         </div>
         <div class="form-group">
           <label>Email</label>
@@ -56,56 +68,9 @@
         </div>
         <div class="form-group">
           <label>Senha</label>
-          <div style="position:relative">
-            <input type="password" id="reg-password" placeholder="6-12 caracteres, maiúscula, número, especial" required minlength="6" maxlength="12" style="padding-right:40px">
-            <span onclick="document.getElementById('reg-password').type = document.getElementById('reg-password').type === 'password' ? 'text' : 'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span>
-          </div>
-          <small style="color:var(--muted);font-size:11px">Mínimo 6, máximo 12 caracteres. Precisa: 1 maiúscula, 1 número, 1 especial (!@#$%...)</small>
+          <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
         </div>
         <button type="submit" class="btn-auth">Criar Conta 🚀</button>
-      </form>
-
-      <!-- Recover Password -->
-      <form id="recover-form" class="auth-form hidden" onsubmit="Auth.recoverPassword(event)">
-        <div style="text-align:center;margin-bottom:16px">
-          <span style="font-size:40px">🔐</span>
-        </div>
-        <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">Digite seu email e enviaremos um código para redefinir sua senha.</p>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="recover-email" placeholder="seu@email.com" required>
-        </div>
-        <button type="submit" class="btn-auth">Enviar Código 📧</button>
-        <p style="text-align:center;margin-top:12px">
-          <a href="#" onclick="Auth.showTab('login');return false" style="color:var(--accent);font-size:13px">← Voltar ao login</a>
-        </p>
-      </form>
-
-      <!-- Reset Password -->
-      <form id="reset-form" class="auth-form hidden" onsubmit="Auth.resetPassword(event)">
-        <div style="text-align:center;margin-bottom:16px">
-          <span style="font-size:40px">🔑</span>
-        </div>
-        <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">Digite o código abaixo e sua nova senha.</p>
-        <div style="background:var(--bg-dark);padding:16px;border-radius:8px;text-align:center;margin-bottom:16px">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Código de recuperação:</div>
-          <div id="reset-code-display" style="font-size:28px;font-weight:bold;letter-spacing:8px;color:var(--accent)">------</div>
-        </div>
-        <div class="form-group">
-          <label>Código</label>
-          <input type="text" id="reset-code" placeholder="Código de 6 dígitos" maxlength="6" required>
-        </div>
-        <div class="form-group">
-          <label>Nova Senha</label>
-          <div style="position:relative">
-            <input type="password" id="reset-password" placeholder="6-12 caracteres, maiúscula, número, especial" required minlength="6" maxlength="12" style="padding-right:40px">
-            <span onclick="document.getElementById('reset-password').type = document.getElementById('reset-password').type === 'password' ? 'text' : 'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span>
-          </div>
-        </div>
-        <button type="submit" class="btn-auth">Redefinir Senha 🔓</button>
-        <p style="text-align:center;margin-top:12px">
-          <a href="#" onclick="Auth.showTab('login');return false" style="color:var(--accent);font-size:13px">← Voltar ao login</a>
-        </p>
       </form>
     </div>
   </div>
@@ -128,11 +93,11 @@
         <span class="nav-icon">📊</span>
         <span class="nav-label">Dashboard</span>
       </a>
-      <a href="#equipe" class="nav-item" data-route="equipe">
+      <a href="#desenvolvedores" class="nav-item" data-route="desenvolvedores" id="menu-devs">
         <span class="nav-icon">👥</span>
-        <span class="nav-label">Equipe</span>
+        <span class="nav-label">Desenvolvedores</span>
       </a>
-      <a href="#ideias" class="nav-item" data-route="ideias">
+      <a href="#ideias" class="nav-item" data-route="ideias" id="menu-ideias">
         <span class="nav-icon">💡</span>
         <span class="nav-label">Ideias</span>
       </a>
@@ -140,17 +105,17 @@
         <span class="nav-icon">📁</span>
         <span class="nav-label">Projetos</span>
       </a>
-      <a href="#tarefas" class="nav-item" data-route="tarefas">
+      <a href="#tarefas" class="nav-item" data-route="tarefas" id="menu-tarefas">
         <span class="nav-icon">✅</span>
         <span class="nav-label">Tarefas</span>
       </a>
-      <a href="#calendario" class="nav-item" data-route="calendario">
-        <span class="nav-icon">📅</span>
-        <span class="nav-label">Calendário</span>
+      <a href="#contratos" class="nav-item" data-route="contratos" id="menu-contratos" style="display:none">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Meus Contratos</span>
       </a>
-      <a href="#servicos" class="nav-item" data-route="servicos">
-        <span class="nav-icon">🛠️</span>
-        <span class="nav-label">Serviços</span>
+      <a href="#equipes" class="nav-item" data-route="equipes" id="menu-equipes">
+        <span class="nav-icon">👨‍👩‍👧‍👦</span>
+        <span class="nav-label">Equipes</span>
       </a>
     </nav>
 
@@ -175,7 +140,6 @@
         <input type="text" id="global-search" placeholder="Buscar ideias, projetos, tarefas..." oninput="handleSearch(this.value)">
       </div>
       <div class="topbar-right">
-        <div id="topbar-team" class="topbar-team" onclick="Router.navigate('equipe')" style="display:none;font-size:13px;color:var(--muted);cursor:pointer;padding:6px 12px;background:rgba(255,255,255,.05);border-radius:20px;border:1px solid var(--border)">Sem equipe</div>
         <div class="user-chip" onclick="Router.navigate('perfil')">
           <span id="topbar-avatar">🧑‍💻</span>
           <span id="topbar-name">Dev</span>
@@ -203,12 +167,29 @@
 </div>
 
 <!-- ══════════════════════════════════════════
-     TOAST
+      TOAST
 ══════════════════════════════════════════ -->
 <div id="toast-container"></div>
 
+<!-- ══════════════════════════════════════════
+      CHAT WIDGET
+══════════════════════════════════════════ -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-panel hidden" id="chat-panel">
+    <div class="chat-header">
+      <h3>💬 Chat da Equipe</h3>
+      <button class="chat-close" onclick="ChatCtrl.toggle()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="chat-input" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter')ChatCtrl.send()">
+      <button onclick="ChatCtrl.send()">Enviar</button>
+    </div>
+  </div>
+  <button class="chat-toggle" id="chat-toggle" onclick="ChatCtrl.toggle()">💬</button>
+</div>
+
 <script src="three.min.js"></script>
-<script src="supabase.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
