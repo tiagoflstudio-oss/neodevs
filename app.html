@@ -39,6 +39,9 @@
           </div>
         </div>
         <button type="submit" class="btn-auth">Entrar →</button>
+        <p style="text-align:center;margin-top:12px">
+          <a href="#" onclick="Auth.showTab('recover');return false" style="color:var(--accent);font-size:13px">Esqueci minha senha</a>
+        </p>
       </form>
 
       <!-- Register -->
@@ -60,6 +63,45 @@
           <small style="color:var(--muted);font-size:11px">Mínimo 6, máximo 12 caracteres. Precisa: 1 maiúscula, 1 número, 1 especial (!@#$%...)</small>
         </div>
         <button type="submit" class="btn-auth">Criar Conta 🚀</button>
+      </form>
+
+      <!-- Recover Password -->
+      <form id="recover-form" class="auth-form hidden" onsubmit="Auth.recoverPassword(event)">
+        <div style="text-align:center;margin-bottom:16px">
+          <span style="font-size:40px">🔐</span>
+        </div>
+        <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">Digite seu email e enviaremos um código para redefinir sua senha.</p>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="recover-email" placeholder="seu@email.com" required>
+        </div>
+        <button type="submit" class="btn-auth">Enviar Código 📧</button>
+        <p style="text-align:center;margin-top:12px">
+          <a href="#" onclick="Auth.showTab('login');return false" style="color:var(--accent);font-size:13px">← Voltar ao login</a>
+        </p>
+      </form>
+
+      <!-- Reset Password -->
+      <form id="reset-form" class="auth-form hidden" onsubmit="Auth.resetPassword(event)">
+        <div style="text-align:center;margin-bottom:16px">
+          <span style="font-size:40px">🔑</span>
+        </div>
+        <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">Digite o código recebido e sua nova senha.</p>
+        <div class="form-group">
+          <label>Código</label>
+          <input type="text" id="reset-code" placeholder="Código de 6 dígitos" maxlength="6" required>
+        </div>
+        <div class="form-group">
+          <label>Nova Senha</label>
+          <div style="position:relative">
+            <input type="password" id="reset-password" placeholder="6-12 caracteres, maiúscula, número, especial" required minlength="6" maxlength="12" style="padding-right:40px">
+            <span onclick="document.getElementById('reset-password').type = document.getElementById('reset-password').type === 'password' ? 'text' : 'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px">👁️</span>
+          </div>
+        </div>
+        <button type="submit" class="btn-auth">Redefinir Senha 🔓</button>
+        <p style="text-align:center;margin-top:12px">
+          <a href="#" onclick="Auth.showTab('login');return false" style="color:var(--accent);font-size:13px">← Voltar ao login</a>
+        </p>
       </form>
     </div>
   </div>

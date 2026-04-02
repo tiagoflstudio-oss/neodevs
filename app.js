@@ -63,9 +63,81 @@ const Auth = {
 
   showTab(tab) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login' || tab === 'recover' || tab === 'reset');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
     document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
     document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+    document.getElementById('recover-form').classList.toggle('hidden', tab !== 'recover');
+    document.getElementById('reset-form').classList.toggle('hidden', tab !== 'reset');
+  },
+
+  async recoverPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('recover-email').value.trim().toLowerCase();
+    
+    const user = await SupaDB.findUser(email);
+    if (!user) {
+      Toast.show('Email não encontrado', 'error');
+      return;
+    }
+    
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    localStorage.setItem('recover_code_' + email, code);
+    localStorage.setItem('recover_email', email);
+    localStorage.setItem('recover_expire', Date.now() + 3600000);
+    
+    Toast.show('Código enviado: ' + code + ' (demo)', 'info');
+    setTimeout(() => {
+      this.showTab('reset');
+    }, 1500);
+  },
+
+  async resetPassword(e) {
+    e.preventDefault();
+    const code = document.getElementById('reset-code').value.trim();
+    const password = document.getElementById('reset-password').value;
+    const email = localStorage.getItem('recover_email');
+    const expire = localStorage.getItem('recover_expire');
+    
+    if (!email || Date.now() > expire) {
+      Toast.show('Código expirado. Tente novamente.', 'error');
+      this.showTab('recover');
+      return;
+    }
+    
+    const storedCode = localStorage.getItem('recover_code_' + email);
+    if (code !== storedCode) {
+      Toast.show('Código incorreto', 'error');
+      return;
+    }
+    
+    if (password.length < 6 || password.length > 12) {
+      Toast.show('Senha deve ter entre 6 e 12 caracteres', 'error');
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      Toast.show('Senha deve ter pelo menos 1 letra maiúscula', 'error');
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      Toast.show('Senha deve ter pelo menos 1 número', 'error');
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      Toast.show('Senha deve ter pelo menos 1 caractere especial', 'error');
+      return;
+    }
+    
+    const user = await SupaDB.findUser(email);
+    user.senha = hashSenha(password);
+    await SupaDB.updateUser(user);
+    
+    localStorage.removeItem('recover_code_' + email);
+    localStorage.removeItem('recover_email');
+    localStorage.removeItem('recover_expire');
+    
+    Toast.show('Senha redefinida! Faça login.', 'success');
+    this.showTab('login');
   },
 
   async login(e) {
