@@ -86,10 +86,10 @@ const Auth = {
     localStorage.setItem('recover_email', email);
     localStorage.setItem('recover_expire', Date.now() + 3600000);
     
-    Toast.show('Código enviado: ' + code + ' (demo)', 'info');
-    setTimeout(() => {
-      this.showTab('reset');
-    }, 1500);
+    document.getElementById('recover-form').classList.add('hidden');
+    document.getElementById('reset-form').classList.remove('hidden');
+    document.getElementById('reset-email-display').textContent = email;
+    document.getElementById('reset-code-display').textContent = code;
   },
 
   async resetPassword(e) {
