@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevHub - Gestão de Projetos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+        
+        nav a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #00d4ff;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 100px 0;
+        }
+        
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero h1 span {
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,212,255,0.3);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 80px;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,212,255,0.3);
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 80px;
+            padding: 40px 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">DevHub</div>
+            <nav>
+                <a href="index.html">Início</a>
+                <a href="app.html#ideias">Ideias</a>
+                <a href="app.html#projetos">Projetos</a>
+                <a href="app.html#tarefas">Tarefas</a>
+                <a href="app.html">Login</a>
+            </nav>
+        </header>
+        
+        <section class="hero">
+            <h1>Transforme suas ideias<br>em <span>softwares</span></h1>
+            <p>Plataforma para desenvolvedores criarem, organizarem e venderem seus programas. Compartilhe ideias com a equipe e acompanhe o progresso.</p>
+            <a href="app.html" class="btn btn-primary">Começar Agora →</a>
+        </section>
+        
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">💡</div>
+                <h3>Registro de Ideias</h3>
+                <p>Registre e compartilhe suas ideias com a equipe. Organize e priorize o que será desenvolvido.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📁</div>
+                <h3>Gestão de Projetos</h3>
+                <p>Crie projetos, defina metas e acompanhe o progresso de cada etapa do desenvolvimento.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Agendamento</h3>
+                <p>Agende tarefas, defina prazos e mantenha toda a equipe alinhada.</p>
+            </div>
+        </section>
+        
+        <section class="stats">
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Desenvolvedores</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Projetos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">48</div>
+                <div class="stat-label">Tarefas Concluídas</div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>&copy; 2026 DevHub - Todos os direitos reservados</p>
+        </footer>
+    </div>
+    
+    <script src="three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        const particleCount = 2000;
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = [];
+        
+        for (let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            positions[i3] = (Math.random() - 0.5) * 10;
+            positions[i3 + 1] = (Math.random() - 0.5) * 10;
+            positions[i3 + 2] = (Math.random() - 0.5) * 10;
+            
+            velocities.push({
+                x: (Math.random() - 0.5) * 0.002,
+                y: (Math.random() - 0.5) * 0.002,
+                z: (Math.random() - 0.5) * 0.002
+            });
+        }
+        
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        const material = new THREE.PointsMaterial({
+            color: 0x00d4ff,
+            size: 0.02,
+            transparent: true,
+            opacity: 0.6,
+            sizeAttenuation: true
+        });
+        
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+        
+        const linesMaterial = new THREE.LineBasicMaterial({
+            color: 0x7c3aed,
+            transparent: true,
+            opacity: 0.1
+        });
+        
+        let lineMesh = null;
+        
+        function createLines() {
+            if (lineMesh) scene.remove(lineMesh);
+            
+            const linePositions = [];
+            const posArray = geometry.attributes.position.array;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                const x1 = posArray[i3];
+                const y1 = posArray[i3 + 1];
+                const z1 = posArray[i3 + 2];
+                
+                for (let j = i + 1; j < particleCount; j++) {
+                    const j3 = j * 3;
+                    const x2 = posArray[j3];
+                    const y2 = posArray[j3 + 1];
+                    const z2 = posArray[j3 + 2];
+                    
+                    const dist = Math.sqrt(
+                        Math.pow(x2 - x1, 2) + 
+                        Math.pow(y2 - y1, 2) + 
+                        Math.pow(z2 - z1, 2)
+                    );
+                    
+                    if (dist < 0.8) {
+                        linePositions.push(x1, y1, z1, x2, y2, z2);
+                    }
+                }
+            }
+            
+            const lineGeometry = new THREE.BufferGeometry();
+            lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            lineMesh = new THREE.LineSegments(lineGeometry, linesMaterial);
+            scene.add(lineMesh);
+        }
+        
+        camera.position.z = 5;
+        
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+        
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        
+        document.addEventListener('mousedown', () => { isDragging = true; });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+        
+        document.addEventListener('mousemove', (event) => {
+            if (isDragging) {
+                const deltaX = event.clientX - previousMousePosition.x;
+                const deltaY = event.clientY - previousMousePosition.y;
+                
+                particles.rotation.y += deltaX * 0.001;
+                particles.rotation.x += deltaY * 0.001;
+            }
+            previousMousePosition = { x: event.clientX, y: event.clientY };
+        });
+        
+        let targetRotationX = 0;
+        let targetRotationY = 0;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const posArray = geometry.attributes.position.array;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                
+                posArray[i3] += velocities[i].x;
+                posArray[i3 + 1] += velocities[i].y;
+                posArray[i3 + 2] += velocities[i].z;
+                
+                if (Math.abs(posArray[i3]) > 5) velocities[i].x *= -1;
+                if (Math.abs(posArray[i3 + 1]) > 5) velocities[i].y *= -1;
+                if (Math.abs(posArray[i3 + 2]) > 5) velocities[i].z *= -1;
+            }
+            
+            geometry.attributes.position.needsUpdate = true;
+            
+            targetRotationX += (mouseY * 0.05 - targetRotationX) * 0.02;
+            targetRotationY += (mouseX * 0.05 - targetRotationY) * 0.02;
+            
+            particles.rotation.x += targetRotationX;
+            particles.rotation.y += targetRotationY;
+            
+            createLines();
+            
+            renderer.render(scene, camera);
+        }
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        animate();
+    </script>
+</body>
+</html>

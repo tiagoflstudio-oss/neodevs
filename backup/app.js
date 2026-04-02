@@ -197,19 +197,13 @@ const Auth = {
     ChatCtrl.init();
     
     if (this.tipo === 'cliente') {
-      document.getElementById('menu-dashboard').style.display = 'none';
       document.getElementById('menu-ideias').style.display = 'none';
-      document.getElementById('menu-projetos').style.display = 'none';
       document.getElementById('menu-tarefas').style.display = 'none';
-      document.getElementById('menu-equipes').style.display = 'none';
-      document.getElementById('menu-devs').style.display = 'flex';
+      document.getElementById('menu-devs').style.display = 'none';
       document.getElementById('menu-contratos').style.display = 'flex';
     } else {
-      document.getElementById('menu-dashboard').style.display = 'flex';
       document.getElementById('menu-ideias').style.display = 'flex';
-      document.getElementById('menu-projetos').style.display = 'flex';
       document.getElementById('menu-tarefas').style.display = 'flex';
-      document.getElementById('menu-equipes').style.display = 'flex';
       document.getElementById('menu-devs').style.display = 'flex';
       document.getElementById('menu-contratos').style.display = 'none';
     }
@@ -314,11 +308,10 @@ const Router = {
   current: 'dashboard',
 
   init() {
-    const defaultRoute = Auth.isCliente() ? 'cliente' : 'dashboard';
-    const hash = location.hash.replace('#', '') || defaultRoute;
+    const hash = location.hash.replace('#', '') || 'dashboard';
     this.navigate(hash);
     window.addEventListener('hashchange', () => {
-      const r = location.hash.replace('#', '') || defaultRoute;
+      const r = location.hash.replace('#', '') || 'dashboard';
       this.render(r);
     });
   },
@@ -329,14 +322,6 @@ const Router = {
   },
 
   render(route) {
-    if (Auth.isCliente() && ['dashboard','ideias','projetos','tarefas','equipes'].includes(route)) {
-      this.navigate('cliente');
-      return;
-    }
-    if (Auth.isDev() && route === 'cliente') {
-      this.navigate('dashboard');
-      return;
-    }
     this.current = route;
     document.querySelectorAll('.nav-item').forEach(el => {
       el.classList.toggle('active', el.dataset.route === route);
@@ -353,7 +338,6 @@ const Router = {
         desenvolvedores: Auth.isDev() ? Views.desenvolvedores : null,
         contratos: Views.contratos,
         equipes: Views.equipes,
-        cliente: Views.cliente,
       };
       const fn = views[route];
       if (fn) await fn(); 
@@ -939,53 +923,7 @@ const Views = {
             `;
           }).join('')}
         </div>
-        `}`;
-  },
-
-  /* ── ÁREA DO CLIENTE ── */
-  async cliente() {
-    const devs = await supabaseFetch('usuarios', { query: '?tipo=eq.dev' });
-    const contratos = (await DB.getContratos()).filter(c => c.cliente_id === Auth.currentUser.id);
-    
-    document.getElementById('main-content').innerHTML = `
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">🏢 Área do Cliente</h1>
-          <p class="page-subtitle">Bem-vindo, ${escHtml(Auth.currentUser.nome)}!</p>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card cyan">
-          <div class="stat-label">👥 Desenvolvedores Disponíveis</div>
-          <div class="stat-value">${devs.length}</div>
-          <div class="stat-change">prontos para contratar</div>
-        </div>
-        <div class="stat-card purple">
-          <div class="stat-label">📋 Contratos Ativos</div>
-          <div class="stat-value">${contratos.filter(c => c.status === 'ativo').length}</div>
-          <div class="stat-change">${contratos.length} total</div>
-        </div>
-      </div>
-
-      <div class="stats-grid" style="margin-bottom:0">
-        <button class="btn btn-primary" style="flex:1;padding:20px;font-size:16px" onclick="Router.navigate('desenvolvedores')">
-          🔍 Buscar Desenvolvedores
-        </button>
-        <button class="btn btn-secondary" style="flex:1;padding:20px;font-size:16px" onclick="Router.navigate('contratos')">
-          📋 Meus Contratos
-        </button>
-      </div>
-
-      <div class="card" style="margin-top:18px">
-        <div class="section-title">💡 Como Funciona</div>
-        <div style="line-height:1.8;color:var(--text);font-size:14px">
-          <p><strong>1. Busque Desenvolvedores:</strong> Navegue pela lista de desenvolvedores disponíveis e escolha o melhor para seu projeto.</p>
-          <p><strong>2. Contrate:</strong> Entre em contato diretamente com o desenvolvedor e formalize o contrato.</p>
-          <p><strong>3. Acompanhe:</strong> Gerencie seus contratos e acompanhe o progresso do seu projeto.</p>
-          <p><strong>4. Gerencie:</strong> Acesse "Meus Contratos" para visualizar todos os contratos ativos e histórico.</p>
-        </div>
-      </div>`;
+      `}`;
   },
 };
 
