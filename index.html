@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevHub - Gestão de Projetos</title>
+    <title>DevHub - Contrate Desenvolvedores e Equipes</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         * {
             margin: 0;
@@ -13,9 +13,18 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --primary: #00d4ff;
+            --secondary: #7c3aed;
+            --accent: #f472b6;
+            --dark: #0a0a0f;
+            --glass: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.08);
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background: #0a0a0f;
+            background: var(--dark);
             color: #fff;
             overflow-x: hidden;
             min-height: 100vh;
@@ -33,286 +42,905 @@
         .container {
             position: relative;
             z-index: 1;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 40px;
         }
         
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 25px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10,10,15,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
         }
         
         .logo {
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
         }
         
         nav {
             display: flex;
-            gap: 30px;
+            gap: 35px;
+            align-items: center;
         }
         
         nav a {
             color: rgba(255,255,255,0.7);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s;
+            font-size: 15px;
+            transition: all 0.3s;
+            position: relative;
         }
         
         nav a:hover {
-            color: #00d4ff;
+            color: var(--primary);
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: none;
+            font-size: 15px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,212,255,0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: #fff;
         }
         
         .hero {
             text-align: center;
-            padding: 100px 0;
+            padding: 180px 0 120px;
+            position: relative;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+        
+        .hero-badge span {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
         
         .hero h1 {
-            font-size: 56px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
+            font-size: 72px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            line-height: 1.1;
+            animation: fadeInUp 0.8s ease 0.2s both;
         }
         
-        .hero h1 span {
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 200%;
+            animation: gradientMove 3s ease infinite;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: rgba(255,255,255,0.6);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 100px;
+            animation: fadeInUp 0.8s ease 0.8s both;
+        }
+        
+        .hero-stat {
+            text-align: center;
+        }
+        
+        .hero-stat-number {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
-        .hero p {
+        .hero-stat-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .section-title h2 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .section-title h2 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-title p {
+            color: rgba(255,255,255,0.5);
             font-size: 18px;
-            color: rgba(255,255,255,0.6);
-            max-width: 600px;
-            margin: 0 auto 40px;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 14px 32px;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-            font-size: 16px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            color: #fff;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0,212,255,0.3);
         }
         
         .features {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 30px;
-            margin-top: 80px;
+            margin: 120px 0;
         }
         
         .feature-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(0,212,255,0.15); /* Fraco base blue border */
-            border-radius: 20px;
-            padding: 30px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0,212,255,0.05); /* Fraco base blue glow */
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
         .feature-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            background: rgba(0,212,255,0.05);
-            border-color: rgba(0,212,255,0.8);
-            box-shadow: 0 15px 40px rgba(0,212,255,0.4), 0 0 20px rgba(0,212,255,0.15) inset; /* Forte blue glow on hover */
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255,255,255,0.06);
+            border-color: var(--primary);
+            box-shadow: 0 25px 50px rgba(0,212,255,0.2);
+        }
+        
+        .feature-card:hover::before {
+            opacity: 1;
         }
         
         .feature-icon {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
-            border-radius: 12px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 28px;
+            margin-bottom: 25px;
             transition: all 0.4s ease;
         }
         
         .feature-card:hover .feature-icon {
             transform: scale(1.1) rotate(-5deg);
-            background: linear-gradient(135deg, rgba(0,212,255,0.4), rgba(124,58,237,0.4));
-            box-shadow: 0 0 20px rgba(0,212,255,0.5);
+            box-shadow: 0 0 30px rgba(0,212,255,0.5);
         }
         
         .feature-card h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
+            font-size: 22px;
+            margin-bottom: 12px;
         }
         
         .feature-card p {
             color: rgba(255,255,255,0.5);
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.7;
         }
         
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 60px;
-            margin-top: 80px;
-            padding: 40px 0;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+        .devs-section {
+            margin: 120px 0;
+            padding: 80px 0;
+            background: var(--glass);
+            border-top: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--glass-border);
         }
         
-        .stat-item {
+        .devs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .dev-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
             text-align: center;
+            transition: all 0.4s;
+            cursor: pointer;
         }
         
-        .stat-number {
-            font-size: 48px;
+        .dev-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,212,255,0.2);
+        }
+        
+        .dev-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 10px 30px rgba(0,212,255,0.3);
+        }
+        
+        .dev-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .dev-role {
+            color: var(--primary);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        
+        .dev-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .dev-tag {
+            padding: 4px 12px;
+            background: var(--glass);
+            border-radius: 20px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .dev-price {
+            margin-top: 15px;
+            font-size: 20px;
             font-weight: 700;
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--secondary);
         }
         
-        .stat-label {
+        .hire-btn {
+            margin-top: 15px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hire-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,212,255,0.4);
+        }
+        
+        .teams-section {
+            margin: 120px 0;
+        }
+        
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .team-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            transition: all 0.4s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--secondary);
+            box-shadow: 0 25px 50px rgba(124,58,237,0.2);
+        }
+        
+        .team-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .team-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .team-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .team-desc {
             color: rgba(255,255,255,0.5);
             font-size: 14px;
-            margin-top: 5px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .team-members {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .team-member {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--glass);
+            border: 2px solid var(--dark);
+            margin-left: -10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .team-member:first-child {
+            margin-left: 0;
+        }
+        
+        .team-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .team-price span {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 400;
+        }
+        
+        .cta-section {
+            margin: 120px 0;
+            text-align: center;
+            padding: 80px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(124,58,237,0.1));
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,212,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-section h2 {
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            color: rgba(255,255,255,0.6);
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        .testimonials {
+            margin: 120px 0;
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        
+        .testimonial-text {
+            color: rgba(255,255,255,0.7);
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .testimonial-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .testimonial-name {
+            font-weight: 600;
+        }
+        
+        .testimonial-role {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
         }
         
         footer {
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--glass-border);
             text-align: center;
-            padding: 40px 0;
-            color: rgba(255,255,255,0.3);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
             font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .footer-copy {
+            color: rgba(255,255,255,0.3);
+            font-size: 13px;
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1024px) {
+            .hero h1 { font-size: 48px; }
+            .features { grid-template-columns: repeat(2, 1fr); }
+            .devs-grid { grid-template-columns: repeat(2, 1fr); }
+            .teams-grid { grid-template-columns: repeat(2, 1fr); }
+            .testimonials-grid { grid-template-columns: 1fr; }
         }
         
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 36px;
-            }
-            
-            .features {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats {
-                flex-direction: column;
-                gap: 30px;
-            }
-            
-            nav {
-                display: none;
-            }
+            .hero h1 { font-size: 36px; }
+            .hero-stats { flex-direction: column; gap: 30px; }
+            .features { grid-template-columns: 1fr; }
+            .devs-grid { grid-template-columns: 1fr; }
+            .teams-grid { grid-template-columns: 1fr; }
+            nav { display: none; }
+            .hero-buttons { flex-direction: column; }
+            .section-title h2 { font-size: 32px; }
         }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
     
-    <div class="container">
-        <header>
-            <div class="logo">DevHub</div>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                DevHub
+            </div>
             <nav>
-                <a href="index.html">Início</a>
-                <a href="app.html#servicos">Serviços</a>
-                <a href="app.html#ideias">Ideias</a>
-                <a href="app.html#projetos">Projetos</a>
-                <a href="app.html#tarefas">Tarefas</a>
-                <a href="app.html">Login</a>
+                <a href="#features">Recursos</a>
+                <a href="#devs">Desenvolvedores</a>
+                <a href="#teams">Equipes</a>
+                <a href="#depoimentos">Depoimentos</a>
+                <a href="app.html" class="btn btn-outline">Login</a>
+                <a href="app.html" class="btn btn-primary">Começar</a>
             </nav>
-        </header>
-        
-        <section class="hero">
-            <h1>Transforme suas ideias<br>em <span>softwares</span></h1>
-            <p>Plataforma para desenvolvedores criarem, organizarem e venderem seus programas. Gerencie serviços, ideias e projetos com a equipe.</p>
-            <a href="app.html" class="btn btn-primary">Começar Agora →</a>
-        </section>
-        
-        <section class="features">
-            <div class="feature-card">
-                <div class="feature-icon">💡</div>
-                <h3>Registro de Ideias</h3>
-                <p>Registre e compartilhe suas ideias com a equipe. Organize e priorize o que será desenvolvido.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📁</div>
-                <h3>Gestão de Projetos</h3>
-                <p>Crie projetos, defina metas e acompanhe o progresso de cada etapa do desenvolvimento.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📅</div>
-                <h3>Agendamento</h3>
-                <p>Agende tarefas, defina prazos e mantenha toda a equipe alinhada.</p>
-            </div>
-        </section>
-        
-        <section class="stats">
-            <div class="stat-item">
-                <div class="stat-number">3</div>
-                <div class="stat-label">Desenvolvedores</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">12</div>
-                <div class="stat-label">Projetos</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">48</div>
-                <div class="stat-label">Tarefas Concluídas</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">6</div>
-                <div class="stat-label">Serviços</div>
-            </div>
-        </section>
-        
-        <section class="features" style="margin-top:60px">
-            <h2 style="grid-column:span 3;text-align:center;font-size:32px;margin-bottom:20px">Nossos <span>Serviços</span></h2>
-            <div class="feature-card">
-                <div class="feature-icon">💻</div>
-                <h3>Desenvolvimento</h3>
-                <p>Sistemas personalizados, aplicações web, desktop e mobile com as melhores tecnologias do mercado.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎨</div>
-                <h3>UI/UX Design</h3>
-                <p>Interfaces modernas e intuitivas que encantam seus usuários e aumentam a conversão.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">☁️</div>
-                <h3>DevOps & Cloud</h3>
-                <p>CI/CD, infraestrutura em nuvem, Docker e Kubernetes para alta disponibilidade.</p>
-            </div>
-        </section>
-        
-        <div style="text-align:center;margin-top:40px">
-            <a href="app.html#servicos" class="btn btn-primary" style="background:transparent;border:2px solid #00d4ff">Ver todos os serviços →</a>
         </div>
+    </header>
+    
+    <div class="container">
+        <section class="hero">
+            <div class="hero-badge">
+                <span></span>
+                +500 desenvolvedores disponíveis
+            </div>
+            <h1>Encontre o profissional<br><span class="gradient">perfeito</span> para seu projeto</h1>
+            <p>Conecte-se com desenvolvedores e equipes especializadas. Contrate direto, sem intermediários. Desenvolvimento rápido, preços justos.</p>
+            <div class="hero-buttons">
+                <a href="#devs" class="btn btn-primary">Buscar Desenvolvedores →</a>
+                <a href="#teams" class="btn btn-outline">Ver Equipes</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-number">500+</div>
+                    <div class="hero-stat-label">Desenvolvedores</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">50+</div>
+                    <div class="hero-stat-label">Equipes</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">2000+</div>
+                    <div class="hero-stat-label">Projetos Entregues</div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="features" id="features">
+            <div class="section-title">
+                <h2>Por que contratar no <span>DevHub</span>?</h2>
+                <p>Plataforma completa para conectar você aos melhores profissionais</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Match Inteligente</h3>
+                <p>Nosso algoritmo indica os melhores profissionais baseado no seu projeto, orçamento e necessidades técnicas.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Preços Justos</h3>
+                <p>Negocie diretamente com os desenvolvedores. Sem taxas ocultas, sem intermediários, sem surpresas.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Entrega Rápida</h3>
+                <p>Equipes completas prontas para atuar no seu projeto. Comece em até 24 horas após a contratação.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Segurança</h3>
+                <p>Pagamento seguro com garantia. Seu dinheiro só é liberado quando o projeto for entregue e aprovado.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Comunicação Directa</h3>
+                <p>Chat integrado para conversar diretamente com os profissionais. Acompanhe o progresso em tempo real.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Gestão Completa</h3>
+                <p>Acompanhe todas as etapas do desenvolvimento. Kanban, calendário, relatórios e muito mais.</p>
+            </div>
+        </section>
+        
+        <section class="devs-section" id="devs">
+            <div class="section-title">
+                <h2>Desenvolvedores <span>Disponíveis</span></h2>
+                <p>Profissionais especializados prontos para seu projeto</p>
+            </div>
+            <div class="devs-grid">
+                <div class="dev-card">
+                    <div class="dev-avatar">👨‍💻</div>
+                    <div class="dev-name">Carlos Silva</div>
+                    <div class="dev-role">Full Stack Developer</div>
+                    <div class="dev-tags">
+                        <span class="dev-tag">React</span>
+                        <span class="dev-tag">Node.js</span>
+                        <span class="dev-tag">Python</span>
+                    </div>
+                    <div class="dev-price">R$ 150/h</div>
+                    <button class="hire-btn">Contratar</button>
+                </div>
+                <div class="dev-card">
+                    <div class="dev-avatar">👩‍💻</div>
+                    <div class="dev-name">Ana Costa</div>
+                    <div class="dev-role">UX/UI Designer</div>
+                    <div class="dev-tags">
+                        <span class="dev-tag">Figma</span>
+                        <span class="dev-tag">Adobe XD</span>
+                        <span class="dev-tag">Prototipagem</span>
+                    </div>
+                    <div class="dev-price">R$ 120/h</div>
+                    <button class="hire-btn">Contratar</button>
+                </div>
+                <div class="dev-card">
+                    <div class="dev-avatar">👨‍🎨</div>
+                    <div class="dev-name">Bruno Oliveira</div>
+                    <div class="dev-role">DevOps Engineer</div>
+                    <div class="dev-tags">
+                        <span class="dev-tag">AWS</span>
+                        <span class="dev-tag">Docker</span>
+                        <span class="dev-tag">K8s</span>
+                    </div>
+                    <div class="dev-price">R$ 180/h</div>
+                    <button class="hire-btn">Contratar</button>
+                </div>
+                <div class="dev-card">
+                    <div class="dev-avatar">👩‍🔬</div>
+                    <div class="dev-name">Juliana Santos</div>
+                    <div class="dev-role">Mobile Developer</div>
+                    <div class="dev-tags">
+                        <span class="dev-tag">React Native</span>
+                        <span class="dev-tag">Flutter</span>
+                        <span class="dev-tag">Swift</span>
+                    </div>
+                    <div class="dev-price">R$ 160/h</div>
+                    <button class="hire-btn">Contratar</button>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:40px">
+                <a href="app.html" class="btn btn-outline">Ver todos os desenvolvedores →</a>
+            </div>
+        </section>
+        
+        <section class="teams-section" id="teams">
+            <div class="section-title">
+                <h2>Equipes <span>Especializadas</span></h2>
+                <p>Grupos completos prontos para projetos de qualquer tamanho</p>
+            </div>
+            <div class="teams-grid">
+                <div class="team-card">
+                    <div class="team-badge">Mais Popular</div>
+                    <div class="team-icon">🚀</div>
+                    <div class="team-name">DevTeam Pro</div>
+                    <div class="team-desc">Equipe full stack especializada em aplicações web modernas com React, Node.js e cloud.</div>
+                    <div class="team-members">
+                        <div class="team-member">👨</div>
+                        <div class="team-member">👩</div>
+                        <div class="team-member">👨</div>
+                        <div class="team-member">+2</div>
+                    </div>
+                    <div class="team-price">R$ 5.000<span>/mês</span></div>
+                    <button class="hire-btn" style="width:100%">Contratar Equipe</button>
+                </div>
+                <div class="team-card">
+                    <div class="team-icon">🎨</div>
+                    <div class="team-name">DesignHub</div>
+                    <div class="team-desc">Equipe de design focada em UX/UI, branding e identidade visual para startups.</div>
+                    <div class="team-members">
+                        <div class="team-member">👩</div>
+                        <div class="team-member">👨</div>
+                        <div class="team-member">👩</div>
+                    </div>
+                    <div class="team-price">R$ 3.500<span>/mês</span></div>
+                    <button class="hire-btn" style="width:100%">Contratar Equipe</button>
+                </div>
+                <div class="team-card">
+                    <div class="team-icon">📱</div>
+                    <div class="team-name">Mobile Masters</div>
+                    <div class="team-desc">Especialistas em apps iOS e Android. React Native, Flutter e Swift.</div>
+                    <div class="team-members">
+                        <div class="team-member">👨</div>
+                        <div class="team-member">👩</div>
+                        <div class="team-member">👨</div>
+                        <div class="team-member">+1</div>
+                    </div>
+                    <div class="team-price">R$ 4.500<span>/mês</span></div>
+                    <button class="hire-btn" style="width:100%">Contratar Equipe</button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Pronto para começar?</h2>
+                <p>Crie sua conta gratuitamente e encontre o profissional ideal em minutos</p>
+                <a href="app.html" class="btn btn-primary" style="font-size:18px;padding:16px 40px">Criar Conta Grátis →</a>
+            </div>
+        </section>
+        
+        <section class="testimonials" id="depoimentos">
+            <div class="section-title">
+                <h2>O que dizem <span> nossos clientes</span></h2>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-text">"Encontrei uma equipe increíble em menos de 24h. O projeto ficou melhor do que esperava!"</div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">👨</div>
+                        <div>
+                            <div class="testimonial-name">Roberto Lima</div>
+                            <div class="testimonial-role">CEO, StartupTech</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">"Plataforma incrível! Contratei 3 devs pelo site e todos entregaram no prazo. Recomendo!"</div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">👩</div>
+                        <div>
+                            <div class="testimonial-name">Marcia Alves</div>
+                            <div class="testimonial-role">Product Manager</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-text">"Melhor investimento que fiz. Meu app foi lançado em 2 meses com a equipe Mobile Masters."</div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">👨</div>
+                        <div>
+                            <div class="testimonial-name">Fernando Souza</div>
+                            <div class="testimonial-role">Fundador, AppIdeas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
         
         <footer>
-            <p>&copy; 2026 DevHub - Todos os direitos reservados</p>
+            <div class="footer-links">
+                <a href="#">Sobre</a>
+                <a href="#">Como funciona</a>
+                <a href="#">Blog</a>
+                <a href="#">Contato</a>
+                <a href="#">Termos</a>
+                <a href="#">Privacidade</a>
+            </div>
+            <div class="footer-copy">© 2026 DevHub. Todos os direitos reservados.</div>
         </footer>
     </div>
     
@@ -326,31 +954,45 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         document.getElementById('canvas-container').appendChild(renderer.domElement);
         
-        const particleCount = 2000;
+        const particleCount = 3000;
         const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
         const velocities = [];
+        
+        const color1 = new THREE.Color(0x00d4ff);
+        const color2 = new THREE.Color(0x7c3aed);
+        const color3 = new THREE.Color(0xf472b6);
         
         for (let i = 0; i < particleCount; i++) {
             const i3 = i * 3;
-            positions[i3] = (Math.random() - 0.5) * 10;
-            positions[i3 + 1] = (Math.random() - 0.5) * 10;
-            positions[i3 + 2] = (Math.random() - 0.5) * 10;
+            positions[i3] = (Math.random() - 0.5) * 15;
+            positions[i3 + 1] = (Math.random() - 0.5) * 15;
+            positions[i3 + 2] = (Math.random() - 0.5) * 15;
+            
+            const mixColor = Math.random() > 0.5 ? 
+                color1.clone().lerp(color2, Math.random()) : 
+                color2.clone().lerp(color3, Math.random());
+            
+            colors[i3] = mixColor.r;
+            colors[i3 + 1] = mixColor.g;
+            colors[i3 + 2] = mixColor.b;
             
             velocities.push({
-                x: (Math.random() - 0.5) * 0.00003,
-                y: (Math.random() - 0.5) * 0.00003,
-                z: (Math.random() - 0.5) * 0.00003
+                x: (Math.random() - 0.5) * 0.00004,
+                y: (Math.random() - 0.5) * 0.00004,
+                z: (Math.random() - 0.5) * 0.00004
             });
         }
         
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         
         const material = new THREE.PointsMaterial({
-            color: 0x00d4ff,
-            size: 0.02,
+            size: 0.03,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.8,
+            vertexColors: true,
             sizeAttenuation: true
         });
         
@@ -360,7 +1002,7 @@
         const linesMaterial = new THREE.LineBasicMaterial({
             color: 0x7c3aed,
             transparent: true,
-            opacity: 0.1
+            opacity: 0.08
         });
         
         let lineMesh = null;
@@ -371,13 +1013,13 @@
             const linePositions = [];
             const posArray = geometry.attributes.position.array;
             
-            for (let i = 0; i < particleCount; i++) {
+            for (let i = 0; i < particleCount; i += 3) {
                 const i3 = i * 3;
                 const x1 = posArray[i3];
                 const y1 = posArray[i3 + 1];
                 const z1 = posArray[i3 + 2];
                 
-                for (let j = i + 1; j < particleCount; j++) {
+                for (let j = i + 3; j < particleCount; j += 3) {
                     const j3 = j * 3;
                     const x2 = posArray[j3];
                     const y2 = posArray[j3 + 1];
@@ -389,7 +1031,7 @@
                         Math.pow(z2 - z1, 2)
                     );
                     
-                    if (dist < 0.8) {
+                    if (dist < 1.2) {
                         linePositions.push(x1, y1, z1, x2, y2, z2);
                     }
                 }
@@ -401,7 +1043,7 @@
             scene.add(lineMesh);
         }
         
-        camera.position.z = 5;
+        camera.position.z = 6;
         
         let mouseX = 0;
         let mouseY = 0;
@@ -409,23 +1051,6 @@
         document.addEventListener('mousemove', (event) => {
             mouseX = (event.clientX / window.innerWidth) * 2 - 1;
             mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-        });
-        
-        let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
-        
-        document.addEventListener('mousedown', () => { isDragging = true; });
-        document.addEventListener('mouseup', () => { isDragging = false; });
-        
-        document.addEventListener('mousemove', (event) => {
-            if (isDragging) {
-                const deltaX = event.clientX - previousMousePosition.x;
-                const deltaY = event.clientY - previousMousePosition.y;
-                
-                particles.rotation.y += deltaX * 0.000015;
-                particles.rotation.x += deltaY * 0.000015;
-            }
-            previousMousePosition = { x: event.clientX, y: event.clientY };
         });
         
         let targetRotationX = 0;
@@ -443,15 +1068,15 @@
                 posArray[i3 + 1] += velocities[i].y;
                 posArray[i3 + 2] += velocities[i].z;
                 
-                if (Math.abs(posArray[i3]) > 5) velocities[i].x *= -1;
-                if (Math.abs(posArray[i3 + 1]) > 5) velocities[i].y *= -1;
-                if (Math.abs(posArray[i3 + 2]) > 5) velocities[i].z *= -1;
+                if (Math.abs(posArray[i3]) > 7.5) velocities[i].x *= -1;
+                if (Math.abs(posArray[i3 + 1]) > 7.5) velocities[i].y *= -1;
+                if (Math.abs(posArray[i3 + 2]) > 7.5) velocities[i].z *= -1;
             }
             
             geometry.attributes.position.needsUpdate = true;
             
-            targetRotationX += (mouseY * 0.002 - targetRotationX) * 0.002;
-            targetRotationY += (mouseX * 0.002 - targetRotationY) * 0.002;
+            targetRotationX += (mouseY * 0.001 - targetRotationX) * 0.002;
+            targetRotationY += (mouseX * 0.001 - targetRotationY) * 0.002;
             
             particles.rotation.x += targetRotationX;
             particles.rotation.y += targetRotationY;
@@ -468,6 +1093,15 @@
         });
         
         animate();
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
     </script>
 </body>
 </html>

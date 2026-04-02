@@ -277,6 +277,7 @@ const Router = {
       ideias: Views.ideias,
       projetos: Views.projetos,
       tarefas: Views.tarefas,
+      calendario: Views.calendario,
       servicos: Views.servicos,
       perfil: Views.perfil,
       equipe: Views.equipe
@@ -604,6 +605,106 @@ const Views = {
         <select onchange="Views.tarefas(this.value)">${projOpts}</select>
       </div>
       <div class="kanban-board kanban-4">${cols.map(renderCol).join('')}</div>`;
+  },
+
+  /* ── CALENDÁRIO ── */
+  async calendario() {
+    const equipeId = Auth.currentEquipe?.id;
+    const tarefas = await SupaDB.getTarefas(equipeId);
+    const projetos = await SupaDB.getProjetos(equipeId);
+    
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+    
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    function getMonthData(year, month) {
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+      
+      let days = [];
+      for (let i = 0; i < startDay; i++) {
+        days.push({ day: '', tasks: [] });
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayTasks = tarefas.filter(t => t.prazo && t.prazo.startsWith(dateStr));
+        days.push({ day: d, date: dateStr, tasks: dayTasks });
+      }
+      while (days.length < 42) {
+        days.push({ day: '', tasks: [] });
+      }
+      return days;
+    }
+    
+    const days = getMonthData(currentYear, currentMonth);
+    const todayStr = today.toISOString().split('T')[0];
+    
+    const weekDaysHtml = weekDays.map(w => `<div class="cal-weekday">${w}</div>`).join('');
+    
+    const daysHtml = days.map(d => {
+      if (!d.day) return '<div class="cal-day empty"></div>';
+      
+      const isToday = d.date === todayStr;
+      const isPast = d.date && d.date < todayStr && !d.tasks.some(t => t.status === 'concluida');
+      const taskItems = d.tasks.slice(0, 2).map(t => {
+        const proj = projetos.find(p => p.id === t.projeto_id);
+        return `<div class="cal-task ${t.prioridade}" title="${escHtml(t.titulo)}">${escHtml(t.titulo.substring(0, 20))}${t.titulo.length > 20 ? '...' : ''}</div>`;
+      }).join('');
+      const more = d.tasks.length > 2 ? `<div class="cal-more">+${d.tasks.length - 2} mais</div>` : '';
+      
+      return `
+        <div class="cal-day ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}" onclick="CalendarioCtrl.openDay('${d.date}')">
+          <div class="cal-day-num">${d.day}</div>
+          <div class="cal-tasks">${taskItems}${more}</div>
+        </div>`;
+    }).join('');
+    
+    document.getElementById('main-content').innerHTML = `
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">📅 Calendário</h1>
+          <p class="page-subtitle">${tarefas.filter(t => t.prazo).length} tarefas agendadas</p>
+        </div>
+        <button class="btn btn-primary" onclick="TarefaCtrl.novo()">+ Nova Tarefa</button>
+      </div>
+      
+      <div class="cal-header">
+        <button class="cal-nav" onclick="CalendarioCtrl.prevMonth()">←</button>
+        <div class="cal-title">${monthNames[currentMonth]} ${currentYear}</div>
+        <button class="cal-nav" onclick="CalendarioCtrl.nextMonth()">→</button>
+      </div>
+      
+      <div class="cal-grid">
+        ${weekDaysHtml}
+        ${daysHtml}
+      </div>
+      
+      <style>
+        .cal-header { display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:20px; }
+        .cal-title { font-size:24px;font-weight:600; }
+        .cal-nav { background:var(--glass);border:1px solid var(--glass-border);color:#fff;width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:18px;transition:all 0.3s; }
+        .cal-nav:hover { background:var(--primary);border-color:var(--primary); }
+        .cal-grid { display:grid;grid-template-columns:repeat(7, 1fr);gap:2px;background:var(--glass-border);border-radius:12px;overflow:hidden; }
+        .cal-weekday { background:var(--bg-darker);padding:12px;text-align:center;font-weight:600;font-size:13px;color:var(--muted); }
+        .cal-day { background:var(--bg-dark);min-height:100px;padding:8px;cursor:pointer;transition:all 0.2s; }
+        .cal-day:hover { background:var(--bg-darker); }
+        .cal-day.empty { background:var(--bg-darker);cursor:default; }
+        .cal-day.today { background:rgba(0,212,255,0.15);border:2px solid var(--primary); }
+        .cal-day.past { opacity:0.5; }
+        .cal-day-num { font-weight:600;font-size:14px;margin-bottom:4px; }
+        .cal-tasks { display:flex;flex-direction:column;gap:2px; }
+        .cal-task { font-size:10px;padding:2px 4px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer; }
+        .cal-task.alta { background:rgba(239,68,68,0.3);border-left:2px solid #ef4444; }
+        .cal-task.media { background:rgba(245,158,11,0.3);border-left:2px solid #f59e0b; }
+        .cal-task.baixa { background:rgba(34,197,94,0.3);border-left:2px solid #22c55e; }
+        .cal-more { font-size:10px;color:var(--muted); }
+      </style>
+    `;
   },
 
   /* ── SERVIÇOS ── */
@@ -1513,6 +1614,57 @@ const TarefaCtrl = {
     Toast.show(`Tarefa movida para ${novoStatus}`, 'info');
     await Views.tarefas();
   },
+};
+
+/* ──────────────────────────────────────────────
+   CALENDÁRIO CONTROLLER
+   ────────────────────────────────────────────── */
+const CalendarioCtrl = {
+  currentYear: new Date().getFullYear(),
+  currentMonth: new Date().getMonth(),
+  
+  prevMonth() {
+    this.currentMonth--;
+    if (this.currentMonth < 0) {
+      this.currentMonth = 11;
+      this.currentYear--;
+    }
+    this.render();
+  },
+  
+  nextMonth() {
+    this.currentMonth++;
+    if (this.currentMonth > 11) {
+      this.currentMonth = 0;
+      this.currentYear++;
+    }
+    this.render();
+  },
+  
+  async render() {
+    await Views.calendario();
+  },
+  
+  async openDay(dateStr) {
+    const tarefas = await SupaDB.getTarefas(Auth.currentEquipe?.id);
+    const projetos = await SupaDB.getProjetos(Auth.currentEquipe?.id);
+    const dayTasks = tarefas.filter(t => t.prazo && t.prazo.startsWith(dateStr));
+    
+    if (dayTasks.length === 0) {
+      Toast.show('Nenhuma tarefa nesta data', 'info');
+      return;
+    }
+    
+    const items = dayTasks.map(t => {
+      const proj = projetos.find(p => p.id === t.projeto_id);
+      return `<div class="card" onclick="CardViewer.open('tarefa', ${JSON.stringify(t).replace(/"/g, '&quot;')})">
+        <b>${escHtml(t.titulo)}</b><br>
+        <span style="font-size:12px;color:var(--muted)">${escHtml(proj?.titulo || 'Sem projeto')} • ${t.prioridade}</span>
+      </div>`;
+    }).join('');
+    
+    Modal.open('Tarefas de ' + formatDate(dateStr), items);
+  }
 };
 
 /* ──────────────────────────────────────────────
