@@ -1037,6 +1037,7 @@ const CardViewer = {
 const EquipeCtrl = {
   // Criar nova equipe
   async criarEquipe(nome, descricao) {
+    console.log('Criando equipe:', nome, descricao);
     const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
     const equipe = {
       id: SupaDB.uid(),
@@ -1046,8 +1047,11 @@ const EquipeCtrl = {
       codigo_convite: codigo,
       criado_em: SupaDB.now()
     };
+    console.log('Equipe payload:', equipe);
     
     const result = await SupaDB.createEquipe(equipe);
+    console.log('Resultado criar equipe:', result);
+    
     if (result && !result.error) {
       // Adiciona usuário à equipe
       await SupaDB.updateUser({
