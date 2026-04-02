@@ -287,7 +287,7 @@
         renderer.setPixelRatio(window.devicePixelRatio);
         document.getElementById('canvas-container').appendChild(renderer.domElement);
         
-        const particleCount = 2000;
+        const particleCount = 250;
         const positions = new Float32Array(particleCount * 3);
         const velocities = [];
         
@@ -298,20 +298,20 @@
             positions[i3 + 2] = (Math.random() - 0.5) * 10;
             
             velocities.push({
-                x: (Math.random() - 0.5) * 0.002,
-                y: (Math.random() - 0.5) * 0.002,
-                z: (Math.random() - 0.5) * 0.002
+                x: (Math.random() - 0.5) * 0.0004,
+                y: (Math.random() - 0.5) * 0.0004,
+                z: (Math.random() - 0.5) * 0.0004
             });
         }
         
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         
-        const material = new THREE.PointsMaterial({
+            const material = new THREE.PointsMaterial({
             color: 0x00d4ff,
-            size: 0.02,
+            size: 0.04,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.5,
             sizeAttenuation: true
         });
         
@@ -383,8 +383,8 @@
                 const deltaX = event.clientX - previousMousePosition.x;
                 const deltaY = event.clientY - previousMousePosition.y;
                 
-                particles.rotation.y += deltaX * 0.001;
-                particles.rotation.x += deltaY * 0.001;
+                particles.rotation.y += deltaX * 0.0001;
+                particles.rotation.x += deltaY * 0.0001;
             }
             previousMousePosition = { x: event.clientX, y: event.clientY };
         });
@@ -411,8 +411,8 @@
             
             geometry.attributes.position.needsUpdate = true;
             
-            targetRotationX += (mouseY * 0.05 - targetRotationX) * 0.02;
-            targetRotationY += (mouseX * 0.05 - targetRotationY) * 0.02;
+            targetRotationX += (mouseY * 0.005 - targetRotationX) * 0.002;
+            targetRotationY += (mouseX * 0.005 - targetRotationY) * 0.002;
             
             particles.rotation.x += targetRotationX;
             particles.rotation.y += targetRotationY;
