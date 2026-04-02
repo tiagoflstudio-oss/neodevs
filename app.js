@@ -75,6 +75,11 @@ const Auth = {
     e.preventDefault();
     const email = document.getElementById('recover-email').value.trim().toLowerCase();
     
+    if (!email) {
+      Toast.show('Digite seu email', 'error');
+      return;
+    }
+    
     const user = await SupaDB.findUser(email);
     if (!user) {
       Toast.show('Email não encontrado', 'error');
@@ -88,8 +93,9 @@ const Auth = {
     
     document.getElementById('recover-form').classList.add('hidden');
     document.getElementById('reset-form').classList.remove('hidden');
-    document.getElementById('reset-email-display').textContent = email;
     document.getElementById('reset-code-display').textContent = code;
+    
+    alert('Seu código de recuperação: ' + code + '\n\nAnote este código!');
   },
 
   async resetPassword(e) {
