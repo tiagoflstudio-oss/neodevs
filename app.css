@@ -85,7 +85,9 @@ a{text-decoration:none}
 .topbar-right{margin-left:auto}
 .user-chip{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:50px;padding:7px 16px 7px 10px;cursor:pointer;transition:var(--t);font-size:14px;font-weight:500}
 .user-chip:hover{border-color:rgba(0,212,255,0.3)}
-#main-content{flex:1;padding:30px}
+#main-content{flex:1;padding:30px;position:relative;z-index:1}
+
+#ideias-canvas-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
 /* ── BUTTONS ──────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:var(--t);border:none}

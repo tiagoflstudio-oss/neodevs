@@ -203,6 +203,7 @@ const Views = {
     }
 
     document.getElementById('main-content').innerHTML = `
+      <div id="ideias-canvas-bg"></div>
       <div class="page-header">
         <div>
           <h1 class="page-title">💡 Ideias</h1>
@@ -211,6 +212,8 @@ const Views = {
         <button class="btn btn-primary" onclick="IdeiaCtrl.novo()">+ Nova Ideia</button>
       </div>
       <div class="kanban-board kanban-4">${cols.map(renderCol).join('')}</div>`;
+    
+    initThreeForIdeias();
   },
 
   async projetos(filtro) {

@@ -17,6 +17,10 @@ const Router = {
   },
 
   render(route) {
+    if (route !== 'ideias') {
+      stopThreeIdeias();
+    }
+    
     if (Auth.isCliente() && ['dashboard','ideias','projetos','tarefas','equipes'].includes(route)) {
       this.navigate('cliente');
       return;
