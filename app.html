@@ -47,7 +47,10 @@
         </div>
         <div class="form-group">
           <label>Senha</label>
-          <input type="password" id="login-password" placeholder="••••••••" value="demo123" required>
+          <div class="password-input">
+            <input type="password" id="login-password" placeholder="••••••••" value="demo123" required>
+            <button type="button" class="toggle-password" onclick="togglePassword('login-password')">👁️</button>
+          </div>
         </div>
         <button type="submit" class="btn-auth">Entrar →</button>
       </form>
@@ -68,7 +71,10 @@
         </div>
         <div class="form-group">
           <label>Senha</label>
-          <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+          <div class="password-input">
+            <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+            <button type="button" class="toggle-password" onclick="togglePassword('reg-password')">👁️</button>
+          </div>
         </div>
         <button type="submit" class="btn-auth">Criar Conta 🚀</button>
       </form>
@@ -190,6 +196,20 @@
 </div>
 
 <script src="three.min.js"></script>
-<script src="app.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/router.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/views.js"></script>
+<script src="js/components/ui.js"></script>
+<script src="js/controllers/ideia.js"></script>
+<script src="js/controllers/projeto.js"></script>
+<script src="js/controllers/tarefa.js"></script>
+<script src="js/controllers/perfil.js"></script>
+<script src="js/controllers/equipe.js"></script>
+<script src="js/controllers/chat.js"></script>
+<script src="js/controllers/cliente.js"></script>
+<script src="js/three-bg.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
