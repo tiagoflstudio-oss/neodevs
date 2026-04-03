@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devs Disponíveis - DevHub</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        
+        nav {
+            display: flex;
+            gap: 30px;
+        }
+        
+        nav a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #00d4ff;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .page-title h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        
+        .page-title p {
+            color: rgba(255,255,255,0.6);
+            font-size: 16px;
+        }
+        
+        .devs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .dev-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .dev-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,212,255,0.3);
+        }
+        
+        .dev-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+        
+        .dev-name {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .dev-role {
+            text-align: center;
+            color: #00d4ff;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .dev-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .skill-tag {
+            background: rgba(124, 58, 237, 0.2);
+            color: #a78bfa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .dev-bio {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .dev-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,212,255,0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        @media (max-width: 768px) {
+            nav { display: none; }
+            .page-title h1 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="logo">DevHub</a>
+            <nav>
+                <a href="index.html">Início</a>
+                <a href="#" id="nav-devs">Devs</a>
+                <a href="authInterface.html" id="nav-login">Login</a>
+            </nav>
+        </header>
+
+        <section class="page-title">
+            <h1>Desenvolvedores Disponíveis</h1>
+            <p>En profissionais prontos para transformar suas ideias em realidade</p>
+        </section>
+
+        <div id="devs-container" class="devs-grid">
+            <div class="loading">Carregando desenvolvedores...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabaseUrl = 'https://wipwvjuikcmsmpvqedis.supabase.co'
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpcHd2anVpa2Ntc21wdnFlZGlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDM5NjgsImV4cCI6MjA5MDU3OTk2OH0.eG-vZp3w8qeJySAcGtDjB2Gkl_HQyR2Ri9va2QdPnFw'
+        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+        const devsContainer = document.getElementById('devs-container')
+
+        async function loadDevs() {
+            const { data: devs, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_type', 'dev')
+                .eq('available', true)
+
+            if (error) {
+                devsContainer.innerHTML = '<div class="empty-state">Erro ao carregar devs. Tente novamente.</div>'
+                return
+            }
+
+            if (!devs || devs.length === 0) {
+                devsContainer.innerHTML = '<div class="empty-state">Nenhum desenvolvedor disponível no momento.</div>'
+                return
+            }
+
+            devsContainer.innerHTML = devs.map(dev => `
+                <div class="dev-card">
+                    <div class="dev-avatar">${getInitials(dev.full_name || dev.email)}</div>
+                    <div class="dev-name">${dev.full_name || 'Desenvolvedor'}</div>
+                    <div class="dev-role">${dev.role || 'Desenvolvedor'}</div>
+                    ${dev.skills ? `<div class="dev-skills">${renderSkills(dev.skills)}</div>` : ''}
+                    <div class="dev-bio">${dev.bio || 'Especialista em desenvolvimento de software.'}</div>
+                    <div class="dev-actions">
+                        <a href="mailto:${dev.email}" class="btn btn-primary">Contatar</a>
+                        <a href="#" class="btn btn-secondary">Ver Perfil</a>
+                    </div>
+                </div>
+            `).join('')
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        }
+
+        function renderSkills(skills) {
+            if (typeof skills === 'string') {
+                skills = skills.split(',')
+            }
+            return skills.slice(0, 5).map(s => `<span class="skill-tag">${s.trim()}</span>`).join('')
+        }
+
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            const navLogin = document.getElementById('nav-login')
+            if (session?.user) {
+                const userType = session.user.user_metadata?.user_type
+                navLogin.textContent = 'Sair'
+                navLogin.href = '#logout'
+                navLogin.addEventListener('click', async (e) => {
+                    e.preventDefault()
+                    await supabase.auth.signOut()
+                    window.location.href = 'index.html'
+                })
+            } else {
+                navLogin.textContent = 'Login'
+                navLogin.href = 'authInterface.html'
+            }
+        })
+
+        loadDevs()
+    </script>
+</body>
+</html>

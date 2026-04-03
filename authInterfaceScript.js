@@ -1,8 +1,7 @@
 import {
   signIn,
   signUp,
-  signOut,
-  signInWithProvider
+  signOut
 } from './auth.js'
 
 const loginForm = document.getElementById('login-form')
@@ -30,17 +29,18 @@ document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim()
   const password = document.getElementById('login-password').value.trim()
 
+  if (!email || !password) {
+    showMessage('Preencha email e senha', true)
+    return
+  }
+
   const { data, error } = await signIn(email, password)
   if (error) {
-    showMessage(error.message, true)
+    showMessage('Email ou senha incorretos', true)
   } else {
-    showMessage('Login realizado com sucesso! Redirecionando...')
-    // TODO: Redirecionar para dashboard ou página autenticada
+    showMessage('Login realizado com sucesso!')
+    setTimeout(() => window.location.href = 'app.html', 1000)
   }
-})
-
-document.getElementById('btn-login-google').addEventListener('click', async () => {
-  await signInWithProvider('google')
 })
 
 document.getElementById('btn-signup').addEventListener('click', async () => {
@@ -48,11 +48,19 @@ document.getElementById('btn-signup').addEventListener('click', async () => {
   const password = document.getElementById('signup-password').value.trim()
   const userType = document.getElementById('signup-type').value
 
+  if (!email || !password) {
+    showMessage('Preencha email e senha', true)
+    return
+  }
+  if (password.length < 6) {
+    showMessage('Senha deve ter pelo menos 6 caracteres', true)
+    return
+  }
+
   const { data, error } = await signUp(email, password, userType)
   if (error) {
-    showMessage(error.message, true)
+    showMessage('Erro ao criar conta. Tente outro email.', true)
   } else {
     showMessage('Cadastro realizado! Por favor, verifique seu email para confirmar.')
-    // TODO: Ocultar formulário ou redirecionar usuário
   }
 })
