@@ -118,6 +118,7 @@ const DB = {
   },
 
   async findUser(email) {
+    // Busca qualquer usuário pelo email (não filtra por tipo)
     const data = await supabaseFetch('usuarios', { query: `?email=eq.${encodeURIComponent(email)}&limit=1` });
     return data[0] || null;
   },
