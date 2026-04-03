@@ -307,7 +307,7 @@
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         
-            const material = new THREE.PointsMaterial({
+        const material = new THREE.PointsMaterial({
             color: 0x00d4ff,
             size: 0.04,
             transparent: true,
@@ -317,6 +317,26 @@
         
         const particles = new THREE.Points(geometry, material);
         scene.add(particles);
+        
+        const goldCount = Math.floor(particleCount * 0.05);
+        const goldPositions = new Float32Array(goldCount * 3);
+        for (let i = 0; i < goldCount; i++) {
+            const i3 = i * 3;
+            goldPositions[i3] = (Math.random() - 0.5) * 10;
+            goldPositions[i3 + 1] = (Math.random() - 0.5) * 10;
+            goldPositions[i3 + 2] = (Math.random() - 0.5) * 10;
+        }
+        const goldGeometry = new THREE.BufferGeometry();
+        goldGeometry.setAttribute('position', new THREE.BufferAttribute(goldPositions, 3));
+        const goldMaterial = new THREE.PointsMaterial({
+            color: 0xffd700,
+            size: 0.05,
+            transparent: true,
+            opacity: 0.7,
+            sizeAttenuation: true
+        });
+        const goldParticles = new THREE.Points(goldGeometry, goldMaterial);
+        scene.add(goldParticles);
         
         const linesMaterial = new THREE.LineBasicMaterial({
             color: 0x7c3aed,
@@ -411,11 +431,25 @@
             
             geometry.attributes.position.needsUpdate = true;
             
+            const goldPosArray = goldGeometry.attributes.position.array;
+            for (let i = 0; i < goldCount; i++) {
+                const i3 = i * 3;
+                goldPosArray[i3] += velocities[i].x;
+                goldPosArray[i3 + 1] += velocities[i].y;
+                goldPosArray[i3 + 2] += velocities[i].z;
+                if (Math.abs(goldPosArray[i3]) > 5) velocities[i].x *= -1;
+                if (Math.abs(goldPosArray[i3 + 1]) > 5) velocities[i].y *= -1;
+                if (Math.abs(goldPosArray[i3 + 2]) > 5) velocities[i].z *= -1;
+            }
+            goldGeometry.attributes.position.needsUpdate = true;
+            
             targetRotationX += (mouseY * 0.005 - targetRotationX) * 0.002;
             targetRotationY += (mouseX * 0.005 - targetRotationY) * 0.002;
             
             particles.rotation.x += targetRotationX;
             particles.rotation.y += targetRotationY;
+            goldParticles.rotation.x += targetRotationX;
+            goldParticles.rotation.y += targetRotationY;
             
             createLines();
             
