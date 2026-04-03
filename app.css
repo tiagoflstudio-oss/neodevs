@@ -49,6 +49,11 @@ a{text-decoration:none}
 .btn-auth{padding:13px;background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:var(--t);margin-top:4px}
 .btn-auth:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,212,255,0.3)}
 
+.password-input{position:relative;display:flex;align-items:center}
+.password-input input{width:100%;padding-right:40px}
+.password-input .toggle-password{position:absolute;right:10px;background:none;border:none;cursor:pointer;font-size:16px;opacity:0.6;transition:opacity 0.2s}
+.password-input .toggle-password:hover{opacity:1}
+
 /* ── FORM CONTROLS ────────────────────────────── */
 .form-group{display:flex;flex-direction:column;gap:6px}
 .form-group label{font-size:13px;font-weight:500;color:var(--muted)}

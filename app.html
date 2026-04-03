@@ -47,7 +47,10 @@
         </div>
         <div class="form-group">
           <label>Senha</label>
-          <input type="password" id="login-password" placeholder="••••••••" value="demo123" required>
+          <div class="password-input">
+            <input type="password" id="login-password" placeholder="••••••••" value="demo123" required>
+            <button type="button" class="toggle-password" onclick="togglePassword('login-password')">👁️</button>
+          </div>
         </div>
         <button type="submit" class="btn-auth">Entrar →</button>
       </form>
@@ -68,7 +71,10 @@
         </div>
         <div class="form-group">
           <label>Senha</label>
-          <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+          <div class="password-input">
+            <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+            <button type="button" class="toggle-password" onclick="togglePassword('reg-password')">👁️</button>
+          </div>
         </div>
         <button type="submit" class="btn-auth">Criar Conta 🚀</button>
       </form>
