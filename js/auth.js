@@ -141,7 +141,7 @@ const Auth = {
     this.currentUser = null;
     this.tipo = null;
     Toast.show('Até logo! 👋', 'info');
-    this.showAuth();
+    window.location.href = 'index.html';
   },
 
   isDev() { return this.tipo === 'dev'; },
