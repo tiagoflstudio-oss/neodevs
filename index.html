@@ -216,6 +216,113 @@
                 display: none;
             }
         }
+
+        .auth-section {
+            max-width: 400px;
+            margin: 30px auto;
+            background: #121217;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(124, 58, 173, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .auth-section h2 {
+            color: #eee;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .auth-section input, .auth-section select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 12px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .auth-section input:focus {
+            border-color: #00d4ff;
+        }
+
+        .auth-section input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .auth-section select {
+            cursor: pointer;
+            background: #121217;
+        }
+
+        .auth-section button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, #00d4ff, #0891b2);
+            color: #fff;
+        }
+
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .auth-section p {
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .auth-section p a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+
+        .user-info {
+            display: none;
+            text-align: center;
+        }
+
+        .user-info.active {
+            display: block;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .message-error { color: #ef4444; }
+        .message-success { color: #22c55e; }
     </style>
 </head>
 <body>
@@ -225,15 +332,45 @@
         <header>
             <div class="logo">DevHub</div>
             <nav>
-                <a href="index.html">Início</a>
-                <a href="app.html#ideias">Ideias</a>
-                <a href="app.html#projetos">Projetos</a>
-                <a href="app.html#tarefas">Tarefas</a>
-                <a href="app.html">Login</a>
+                <a href="#inicio">Início</a>
+                <a href="#ideias">Ideias</a>
+                <a href="#projetos">Projetos</a>
+                <a href="#tarefas">Tarefas</a>
+                <a href="#login" id="nav-auth">Login</a>
             </nav>
         </header>
+
+        <section class="auth-section" id="login">
+            <div id="login-form">
+                <h2>Entrar</h2>
+                <input id="login-email" type="email" placeholder="Email" required>
+                <input id="login-password" type="password" placeholder="Senha" required>
+                <button id="btn-login" class="btn btn-primary">Entrar</button>
+                <button id="btn-login-google" class="btn btn-google">Entrar com Google</button>
+                <p>Não tem conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+            </div>
+
+            <div id="signup-form" style="display:none">
+                <h2>Criar Conta</h2>
+                <input id="signup-email" type="email" placeholder="Email" required>
+                <input id="signup-password" type="password" placeholder="Senha" required>
+                <select id="signup-type">
+                    <option value="dev">Desenvolvedor</option>
+                    <option value="cliente">Cliente</option>
+                </select>
+                <button id="btn-signup" class="btn btn-primary">Cadastrar</button>
+                <p>Já tem conta? <a href="#" id="link-to-login">Faça login</a></p>
+            </div>
+
+            <div id="user-info" class="user-info">
+                <p>Bem-vindo, <span id="user-email"></span>!</p>
+                <button id="btn-logout" class="btn btn-primary">Sair</button>
+            </div>
+
+            <div id="message"></div>
+        </section>
         
-        <section class="hero">
+        <section class="hero" id="inicio">
             <h1>Transforme suas ideias<br>em <span>softwares</span></h1>
             <p>Plataforma para desenvolvedores criarem, organizarem e venderem seus programas. Compartilhe ideias com a equipe e acompanhe o progresso.</p>
             <a href="app.html" class="btn btn-primary">Começar Agora →</a>
@@ -463,6 +600,127 @@
         });
         
         animate();
+    </script>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabaseUrl = 'https://YOUR_PROJECT.supabase.co'
+        const supabaseAnonKey = 'YOUR_ANON_KEY'
+        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+        const loginForm = document.getElementById('login-form')
+        const signupForm = document.getElementById('signup-form')
+        const userInfo = document.getElementById('user-info')
+        const messageEl = document.getElementById('message')
+        const navAuth = document.getElementById('nav-auth')
+
+        function showMessage(msg, isError = false) {
+            messageEl.textContent = msg
+            messageEl.className = isError ? 'message-error' : 'message-success'
+        }
+
+        document.getElementById('link-to-signup').addEventListener('click', (e) => {
+            e.preventDefault()
+            loginForm.style.display = 'none'
+            signupForm.style.display = 'block'
+            messageEl.textContent = ''
+        })
+
+        document.getElementById('link-to-login').addEventListener('click', (e) => {
+            e.preventDefault()
+            signupForm.style.display = 'none'
+            loginForm.style.display = 'block'
+            messageEl.textContent = ''
+        })
+
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim()
+            const password = document.getElementById('login-password').value.trim()
+
+            if (!email || !password) {
+                showMessage('Preencha todos os campos', true)
+                return
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+            if (error) {
+                showMessage(error.message, true)
+            } else {
+                showMessage('Login realizado com sucesso!')
+                updateAuthUI(data.user)
+            }
+        })
+
+        document.getElementById('btn-login-google').addEventListener('click', async () => {
+            const { data, error } = await supabase.auth.signInWithOAuth({ 
+                provider: 'google',
+                options: { redirectTo: window.location.origin }
+            })
+            if (error) showMessage(error.message, true)
+        })
+
+        document.getElementById('btn-signup').addEventListener('click', async () => {
+            const email = document.getElementById('signup-email').value.trim()
+            const password = document.getElementById('signup-password').value.trim()
+            const userType = document.getElementById('signup-type').value
+
+            if (!email || !password) {
+                showMessage('Preencha todos os campos', true)
+                return
+            }
+
+            if (password.length < 6) {
+                showMessage('A senha deve ter pelo menos 6 caracteres', true)
+                return
+            }
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { user_type: userType } }
+            })
+
+            if (error) {
+                showMessage(error.message, true)
+            } else {
+                showMessage('Cadastro realizado! Verifique seu email para confirmar.')
+            }
+        })
+
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            await supabase.auth.signOut()
+            updateAuthUI(null)
+            showMessage('Logout realizado!')
+        })
+
+        function updateAuthUI(user) {
+            if (user) {
+                loginForm.style.display = 'none'
+                signupForm.style.display = 'none'
+                userInfo.classList.add('active')
+                document.getElementById('user-email').textContent = user.email
+                navAuth.textContent = 'Sair'
+            } else {
+                loginForm.style.display = 'block'
+                signupForm.style.display = 'none'
+                userInfo.classList.remove('active')
+                navAuth.textContent = 'Login'
+            }
+        }
+
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session?.user) {
+                updateAuthUI(session.user)
+            } else {
+                updateAuthUI(null)
+            }
+        })
+
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+            updateAuthUI(session.user)
+        }
     </script>
 </body>
 </html>
