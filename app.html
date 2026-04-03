@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevHub - Gestão de Projetos</title>
+  <meta name="description" content="Plataforma para desenvolvedores criarem, organizarem e acompanharem seus projetos e tarefas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+      AUTH VIEW
+══════════════════════════════════════════ -->
+<div id="auth-view">
+  <div id="canvas-bg"></div>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">DevHub</div>
+
+      <div class="tipo-selector">
+        <button class="tipo-btn active" id="tipo-dev" onclick="Auth.showTipo('dev')">
+          <span class="tipo-icon">💻</span>
+          <span class="tipo-text">Sou Desenvolvedor</span>
+          <span class="tipo-sub">Quero trabalhar em projetos</span>
+        </button>
+        <button class="tipo-btn" id="tipo-cliente" onclick="Auth.showTipo('cliente')">
+          <span class="tipo-icon">🏢</span>
+          <span class="tipo-text">Sou Cliente</span>
+          <span class="tipo-sub">Quero contratar devs</span>
+        </button>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="Auth.showTab('login')">Entrar</button>
+        <button class="auth-tab" id="tab-register" onclick="Auth.showTab('register')">Criar Conta</button>
+      </div>
+
+      <!-- Login -->
+      <form id="login-form" class="auth-form" data-tipo="dev" onsubmit="Auth.login(event)">
+        <div class="demo-hint" id="login-hint">🔑 Demo Dev: <strong>demo@devhub.com</strong> / <strong>demo123</strong></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="seu@email.com" value="demo@devhub.com" required>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="login-password" placeholder="••••••••" value="demo123" required>
+        </div>
+        <button type="submit" class="btn-auth">Entrar →</button>
+      </form>
+
+      <!-- Register -->
+      <form id="register-form" class="auth-form hidden" data-tipo="dev" onsubmit="Auth.register(event)">
+        <div class="form-group">
+          <label>Nome completo</label>
+          <input type="text" id="reg-nome" placeholder="Seu nome" required>
+        </div>
+        <div class="form-group" id="grp-empresa" style="display:none">
+          <label>Nome da Empresa</label>
+          <input type="text" id="reg-empresa" placeholder="Nome da sua empresa">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <button type="submit" class="btn-auth">Criar Conta 🚀</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════ -->
+<div id="app-shell" class="hidden">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ DevHub</div>
+
+    <nav class="sidebar-nav">
+      <a href="#dashboard" class="nav-item" data-route="dashboard" id="menu-dashboard">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="#desenvolvedores" class="nav-item" data-route="desenvolvedores" id="menu-devs">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Desenvolvedores</span>
+      </a>
+      <a href="#ideias" class="nav-item" data-route="ideias" id="menu-ideias">
+        <span class="nav-icon">💡</span>
+        <span class="nav-label">Ideias</span>
+      </a>
+      <a href="#projetos" class="nav-item" data-route="projetos" id="menu-projetos">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">Projetos</span>
+      </a>
+      <a href="#tarefas" class="nav-item" data-route="tarefas" id="menu-tarefas">
+        <span class="nav-icon">✅</span>
+        <span class="nav-label">Tarefas</span>
+      </a>
+      <a href="#contratos" class="nav-item" data-route="contratos" id="menu-contratos" style="display:none">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Meus Contratos</span>
+      </a>
+      <a href="#equipes" class="nav-item" data-route="equipes" id="menu-equipes">
+        <span class="nav-icon">👨‍👩‍👧‍👦</span>
+        <span class="nav-label">Equipes</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a href="#perfil" class="nav-item" data-route="perfil">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Perfil</span>
+      </a>
+      <button class="logout-btn" onclick="Auth.logout()">
+        <span>🚪</span>
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-search">
+        <span>🔍</span>
+        <input type="text" id="global-search" placeholder="Buscar ideias, projetos, tarefas..." oninput="handleSearch(this.value)">
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip" onclick="Router.navigate('perfil')">
+          <span id="topbar-avatar">🧑‍💻</span>
+          <span id="topbar-name">Dev</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <div class="spinner"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL
+══════════════════════════════════════════ -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="Modal.close()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title">Modal</h3>
+      <button class="modal-close" onclick="Modal.close()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+      TOAST
+══════════════════════════════════════════ -->
+<div id="toast-container"></div>
+
+<!-- ══════════════════════════════════════════
+      CHAT WIDGET
+══════════════════════════════════════════ -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-panel hidden" id="chat-panel">
+    <div class="chat-header">
+      <h3>💬 Chat da Equipe</h3>
+      <button class="chat-close" onclick="ChatCtrl.toggle()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="chat-input" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter')ChatCtrl.send()">
+      <button onclick="ChatCtrl.send()">Enviar</button>
+    </div>
+  </div>
+  <button class="chat-toggle" id="chat-toggle" onclick="ChatCtrl.toggle()">💬</button>
+</div>
+
+<script src="three.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

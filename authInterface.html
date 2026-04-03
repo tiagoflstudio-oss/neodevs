@@ -1,0 +1,85 @@
+<!-- Auth Interface -->
+<div id="auth-root" style="max-width:320px;margin:0 auto;padding:20px;">
+  <div id="login-form">
+    <h2>Login</h2>
+    <input id="login-email" type="email" placeholder="Email" required style="width:100%;padding:10px;margin:10px 0;"/>
+    <input id="login-password" type="password" placeholder="Senha" required style="width:100%;padding:10px;margin:10px 0;"/>
+    <button id="btn-login" style="width:100%;padding:10px;background:#7c3aed;color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;">Entrar</button>
+    <button id="btn-login-google" style="width:100%;margin-top:10px;padding:10px;background:#00d4ff;color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;">Entrar com Google</button>
+    <p style="margin-top:10px;text-align:center;">Não tem conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+  </div>
+
+  <div id="signup-form" style="display:none">
+    <h2>Cadastro</h2>
+    <input id="signup-email" type="email" placeholder="Email" required style="width:100%;padding:10px;margin:10px 0;"/>
+    <input id="signup-password" type="password" placeholder="Senha" required style="width:100%;padding:10px;margin:10px 0;"/>
+    <select id="signup-type" style="width:100%;padding:10px;margin:10px 0;">
+      <option value="dev">Desenvolvedor</option>
+      <option value="cliente">Cliente</option>
+    </select>
+    <button id="btn-signup" style="width:100%;padding:10px;background:#7c3aed;color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;">Cadastrar</button>
+    <p style="margin-top:10px;text-align:center;">Já tem conta? <a href="#" id="link-to-login">Faça login</a></p>
+  </div>
+</div>
+<div id="message" style="max-width:320px;margin:10px auto;text-align:center;font-weight:700;font-size:15px"></div>
+
+<script type="module">
+import {
+  signIn,
+  signUp,
+  signOut,
+  signInWithProvider
+} from './auth.js'
+
+const loginForm = document.getElementById('login-form')
+const signupForm = document.getElementById('signup-form')
+const messageEl = document.getElementById('message')
+
+function showMessage(msg, isError = false) {
+  messageEl.textContent = msg
+  messageEl.style.color = isError ? 'red' : 'green'
+}
+
+document.getElementById('link-to-signup').addEventListener('click', () => {
+  loginForm.style.display = 'none'
+  signupForm.style.display = 'block'
+  messageEl.textContent = ''
+})
+
+document.getElementById('link-to-login').addEventListener('click', () => {
+  signupForm.style.display = 'none'
+  loginForm.style.display = 'block'
+  messageEl.textContent = ''
+})
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('login-email').value.trim()
+  const password = document.getElementById('login-password').value.trim()
+
+  const { data, error } = await signIn(email, password)
+  if (error) {
+    showMessage(error.message, true)
+  } else {
+    showMessage('Login realizado com sucesso! Redirecionando...')
+    // TODO: Redirecionar para dashboard ou página autenticada
+  }
+})
+
+document.getElementById('btn-login-google').addEventListener('click', async () => {
+  await signInWithProvider('google')
+})
+
+document.getElementById('btn-signup').addEventListener('click', async () => {
+  const email = document.getElementById('signup-email').value.trim()
+  const password = document.getElementById('signup-password').value.trim()
+  const userType = document.getElementById('signup-type').value
+
+  const { data, error } = await signUp(email, password, userType)
+  if (error) {
+    showMessage(error.message, true)
+  } else {
+    showMessage('Cadastro realizado! Por favor, verifique seu email para confirmar.')
+    // TODO: Ocultar formulário ou redirecionar usuário
+  }
+})
+</script>
