@@ -5,18 +5,26 @@ const Auth = {
 
   async init() {
     this.data = await DB.load();
-    const sid = DB.getSessao();
+    const token = DB.getAccessToken();
     const tipo = DB.getTipoSessao();
-    if (sid) {
-      if (tipo === 'dev') {
-        this.currentUser = await DB.getUser(sid);
-      } else if (tipo === 'cliente') {
-        this.currentUser = await DB.getCliente(sid);
-      }
-      if (this.currentUser) {
-        this.tipo = tipo;
-        this.showApp();
-        return;
+    const userId = DB.getSessao();
+    
+    if (token && userId) {
+      // Verificar se o token ainda é válido
+      try {
+        const supabaseUser = await AuthAPI.getUser(token);
+        if (supabaseUser.id) {
+          const perfil = await DB.getUser(userId);
+          if (perfil) {
+            this.currentUser = perfil;
+            this.tipo = tipo;
+            this.showApp();
+            return;
+          }
+        }
+      } catch (e) {
+        // Token expirado, fazer logout
+        DB.clearSessao();
       }
     }
     this.showAuth();
@@ -88,20 +96,34 @@ const Auth = {
     const senha = document.getElementById('login-password').value;
     const tipo = document.getElementById('login-form').dataset.tipo || 'dev';
     
-    if (tipo === 'dev') {
-      const user = await DB.findUser(email);
-      if (!user || user.senha !== senha) { Toast.show('Email ou senha incorretos', 'error'); return; }
-      this.currentUser = user;
-      this.tipo = 'dev';
-      DB.setSessao(user.id, 'dev');
-      Toast.show('Bem-vindo, ' + user.nome.split(' ')[0] + '! 👋', 'success');
+    // Login com Supabase Auth
+    const result = await AuthAPI.login(email, senha);
+    
+    if (result.access_token) {
+      // Buscar perfil na tabela usuarios
+      const perfil = await DB.findUser(email);
+      
+      if (!perfil) {
+        // Se não existe na tabela usuarios, criar
+        const novoPerfil = { 
+          id: result.user.id, 
+          nome: result.user.email.split('@')[0], 
+          email: result.user.email, 
+          avatar: tipo === 'dev' ? '🧑‍💻' : '🏢', 
+          tipo: tipo, 
+          criado_em: DB.now() 
+        };
+        await DB.addUser(novoPerfil);
+        this.currentUser = novoPerfil;
+      } else {
+        this.currentUser = perfil;
+      }
+      
+      this.tipo = tipo;
+      DB.setSessao(result.user.id, tipo, result.access_token, result.refresh_token);
+      Toast.show('Bem-vindo, ' + this.currentUser.nome.split(' ')[0] + '! 👋', 'success');
     } else {
-      const cliente = await DB.findCliente(email);
-      if (!cliente || cliente.senha !== senha) { Toast.show('Email ou senha incorretos', 'error'); return; }
-      this.currentUser = cliente;
-      this.tipo = 'cliente';
-      DB.setSessao(cliente.id, 'cliente');
-      Toast.show('Bem-vindo, ' + cliente.nome.split(' ')[0] + '! 🏢', 'success');
+      Toast.show(result.error_description || 'Email ou senha incorretos', 'error');
     }
     this.showApp();
   },
@@ -113,30 +135,47 @@ const Auth = {
     const senha = document.getElementById('reg-password').value;
     const tipo = document.getElementById('register-form').dataset.tipo || 'dev';
     
-    if (tipo === 'dev') {
-      const existing = await DB.findUser(email);
-      if (existing) { Toast.show('Este email já está cadastrado', 'error'); return; }
-      const user = { id: DB.uid(), nome, email, senha, avatar: '🧑‍💻', tipo: 'dev', criado_em: DB.now() };
-      await DB.addUser(user);
-      this.currentUser = user;
-      this.tipo = 'dev';
-      DB.setSessao(user.id, 'dev');
+    // Registrar com Supabase Auth
+    const result = await AuthAPI.signup(email, senha);
+    
+    if (result.access_token || result.id_token) {
+      // Criar perfil na tabela usuarios
+      const perfil = { 
+        id: result.user?.id || DB.uid(), 
+        nome, 
+        email, 
+        avatar: tipo === 'dev' ? '🧑‍💻' : '🏢', 
+        tipo: tipo, 
+        empresa: tipo === 'cliente' ? document.getElementById('reg-empresa').value.trim() : null,
+        criado_em: DB.now() 
+      };
+      
+      await DB.addUser(perfil);
+      this.currentUser = perfil;
+      this.tipo = tipo;
+      
+      // Fazer login automático após registro
+      const loginResult = await AuthAPI.login(email, senha);
+      if (loginResult.access_token) {
+        DB.setSessao(perfil.id, tipo, loginResult.access_token, loginResult.refresh_token);
+      } else {
+        DB.setSessao(perfil.id, tipo);
+      }
+      
       Toast.show('Conta criada! Bem-vindo, ' + nome.split(' ')[0] + '! 🎉', 'success');
-    } else {
-      const empresa = document.getElementById('reg-empresa').value.trim();
-      const existing = await DB.findCliente(email);
-      if (existing) { Toast.show('Este email já está cadastrado', 'error'); return; }
-      const cliente = { id: DB.uid(), nome, email, senha, empresa, avatar: '🏢', tipo: 'cliente', criado_em: DB.now() };
-      await DB.addCliente(cliente);
-      this.currentUser = cliente;
-      this.tipo = 'cliente';
-      DB.setSessao(cliente.id, 'cliente');
-      Toast.show('Conta criada! Bem-vindo, ' + nome.split(' ')[0] + '! 🏢', 'success');
+    } else if (result.error) {
+      Toast.show(result.error_description || 'Erro ao criar conta', 'error');
+      return;
     }
+    
     this.showApp();
   },
 
-  logout() {
+  async logout() {
+    const token = DB.getAccessToken();
+    if (token) {
+      await AuthAPI.logout(token);
+    }
     DB.clearSessao();
     this.currentUser = null;
     this.tipo = null;

@@ -1,11 +1,57 @@
 /* ============================================================
    Supabase Client - DevHub
-   ⚠️ ATENÇÃO: Em produção, use variáveis de ambiente
-   e migre para Supabase Auth
+   ✅ Agora com Supabase Auth para segurança
    ============================================================ */
 
 const SUPABASE_URL = 'https://wipwvjuikcmsmpvqedis.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpcHd2anVpa2Ntc21wdnFlZGlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDM5NjgsImV4cCI6MjA5MDU3OTk2OH0.eG-vZp3w8qeJySAcGtDjB2Gkl_HQyR2Ri9va2QdPnFw';
+
+// Supabase Auth API
+const AuthAPI = {
+  async signup(email, password) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    return res.json();
+  },
+
+  async login(email, password) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    return res.json();
+  },
+
+  async logout(accessToken) {
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+  },
+
+  async getUser(accessToken) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    return res.json();
+  }
+};
 
 const supabaseFetch = async (table, options = {}) => {
   const { method = 'GET', body = null, query = '' } = options;
@@ -54,13 +100,25 @@ const DB = {
     return { usuarios, clientes, ideias, projetos, tarefas, mensagens, contratos };
   },
 
-  getSessao() { return localStorage.getItem('devhub_sessao'); },
+  getSessao() { return localStorage.getItem('devhub_user_id'); },
   getTipoSessao() { return localStorage.getItem('devhub_tipo'); },
-  setSessao(userId, tipo) { localStorage.setItem('devhub_sessao', userId); localStorage.setItem('devhub_tipo', tipo); },
-  clearSessao() { localStorage.removeItem('devhub_sessao'); localStorage.removeItem('devhub_tipo'); },
+  getAccessToken() { return localStorage.getItem('devhub_access_token'); },
+  getRefreshToken() { return localStorage.getItem('devhub_refresh_token'); },
+  setSessao(userId, tipo, accessToken, refreshToken) {
+    localStorage.setItem('devhub_user_id', userId);
+    localStorage.setItem('devhub_tipo', tipo);
+    if (accessToken) localStorage.setItem('devhub_access_token', accessToken);
+    if (refreshToken) localStorage.setItem('devhub_refresh_token', refreshToken);
+  },
+  clearSessao() { 
+    localStorage.removeItem('devhub_user_id'); 
+    localStorage.removeItem('devhub_tipo'); 
+    localStorage.removeItem('devhub_access_token');
+    localStorage.removeItem('devhub_refresh_token');
+  },
 
   async findUser(email) {
-    const data = await supabaseFetch('usuarios', { query: `?email=eq.${encodeURIComponent(email)}&tipo=eq.dev&limit=1` });
+    const data = await supabaseFetch('usuarios', { query: `?email=eq.${encodeURIComponent(email)}&limit=1` });
     return data[0] || null;
   },
   async getUser(id) {
