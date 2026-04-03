@@ -292,6 +292,16 @@
             box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
         }
 
+        .btn-github {
+            background: linear-gradient(135deg, #333, #1a1a1a);
+            color: #fff;
+        }
+
+        .btn-github:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+        }
+
         .auth-section p {
             color: rgba(255,255,255,0.5);
             text-align: center;
@@ -347,6 +357,7 @@
                 <input id="login-password" type="password" placeholder="Senha" required>
                 <button id="btn-login" class="btn btn-primary">Entrar</button>
                 <button id="btn-login-google" class="btn btn-google">Entrar com Google</button>
+                <button id="btn-login-github" class="btn btn-github">Entrar com GitHub</button>
                 <p>Não tem conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
             </div>
 
@@ -653,6 +664,14 @@
         })
 
         document.getElementById('btn-login-google').addEventListener('click', async () => {
+            const { data, error } = await supabase.auth.signInWithOAuth({ 
+                provider: 'google',
+                options: { redirectTo: 'https://neodevs-fkqfu43q5-tiagoflstudio-2933s-projects.vercel.app' }
+            })
+            if (error) showMessage(error.message, true)
+        })
+
+        document.getElementById('btn-login-github').addEventListener('click', async () => {
             const { data, error } = await supabase.auth.signInWithOAuth({ 
                 provider: 'github',
                 options: { redirectTo: 'https://neodevs-fkqfu43q5-tiagoflstudio-2933s-projects.vercel.app' }
