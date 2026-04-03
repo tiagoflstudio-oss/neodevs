@@ -606,7 +606,7 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
         const supabaseUrl = 'https://wipwvjuikcmsmpvqedis.supabase.co'
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kb2IiLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWTRe1gBd9W7UUw3c'
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpcHd2anVpa2Ntc21wdnFlZGlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMDM5NjgsImV4cCI6MjA5MDU3OTk2OH0.eG-vZp3w8qeJySAcGtDjB2Gkl_HQyR2Ri9va2QdPnFw'
         const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
         const loginForm = document.getElementById('login-form')
@@ -654,8 +654,8 @@
 
         document.getElementById('btn-login-google').addEventListener('click', async () => {
             const { data, error } = await supabase.auth.signInWithOAuth({ 
-                provider: 'google',
-                options: { redirectTo: window.location.origin }
+                provider: 'github',
+                options: { redirectTo: 'https://neodevs-fkqfu43q5-tiagoflstudio-2933s-projects.vercel.app' }
             })
             if (error) showMessage(error.message, true)
         })
