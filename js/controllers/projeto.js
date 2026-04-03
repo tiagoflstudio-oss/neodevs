@@ -32,8 +32,9 @@ const ProjetoCtrl = {
       </form>`);
   },
 
-  edit(id) {
-    const p = DB.getProjetos().find(x => x.id === id);
+  async edit(id) {
+    const projetos = await DB.getProjetos();
+    const p = projetos.find(x => x.id === id);
     if (!p) return;
     this.novo();
     document.getElementById('p-id').value = id;
@@ -46,7 +47,7 @@ const ProjetoCtrl = {
     document.getElementById('modal-title').textContent = 'Editar Projeto';
   },
 
-  salvar(e) {
+  async salvar(e) {
     e.preventDefault();
     const id = document.getElementById('p-id').value;
     const data = {
@@ -59,21 +60,25 @@ const ProjetoCtrl = {
       equipe: [Auth.currentUser.id],
     };
     if (id) {
-      const ex = DB.getProjetos().find(x => x.id === id);
-      DB.updateProjeto({ ...ex, ...data });
+      const projetos = await DB.getProjetos();
+      const ex = projetos.find(x => x.id === id);
+      await DB.updateProjeto({ ...ex, ...data });
       Toast.show('Projeto atualizado!', 'success');
     } else {
-      DB.addProjeto({ id: DB.uid(), criadoEm: DB.now(), ...data });
+      await DB.addProjeto({ id: DB.uid(), criado_em: DB.now(), ...data });
       Toast.show('Projeto criado! 📁', 'success');
     }
     Modal.close();
     Views.projetos();
   },
 
-  del(id) {
+  async del(id) {
     if (!confirm('Excluir este projeto e suas tarefas?')) return;
-    DB.deleteProjeto(id);
-    DB.getTarefas().filter(t => t.projetoId === id).forEach(t => DB.deleteTarefa(t.id));
+    const tarefas = await DB.getTarefas();
+    for (const t of tarefas.filter(t => t.projeto_id === id)) {
+      await DB.deleteTarefa(t.id);
+    }
+    await DB.deleteProjeto(id);
     Toast.show('Projeto excluído', 'info');
     Views.projetos();
   },

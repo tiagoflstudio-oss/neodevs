@@ -34,7 +34,7 @@ const IdeiaCtrl = {
     document.getElementById('modal-title').textContent = 'Editar Ideia';
   },
 
-  salvar(e) {
+  async salvar(e) {
     e.preventDefault();
     const id = document.getElementById('i-id').value;
     const tags = document.getElementById('i-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
@@ -43,39 +43,42 @@ const IdeiaCtrl = {
       descricao: document.getElementById('i-desc').value.trim(),
       prioridade: document.getElementById('i-prior').value,
       status: document.getElementById('i-status').value,
-      tags, autorId: Auth.currentUser.id,
+      tags, autor_id: Auth.currentUser.id,
     };
     if (id) {
-      const existing = DB.getIdeias().find(x => x.id === id);
-      DB.updateIdeia({ ...existing, ...data });
+      const existing = await DB.getIdeias();
+      const item = existing.find(x => x.id === id);
+      await DB.updateIdeia({ ...item, ...data });
       Toast.show('Ideia atualizada!', 'success');
     } else {
-      DB.addIdeia({ id: DB.uid(), votos: 0, criadoEm: DB.now(), ...data });
+      await DB.addIdeia({ id: DB.uid(), votos: 0, criado_em: DB.now(), ...data });
       Toast.show('Ideia criada! 💡', 'success');
     }
     Modal.close();
     Views.ideias();
   },
 
-  del(id) {
+  async del(id) {
     if (!confirm('Excluir esta ideia?')) return;
-    DB.deleteIdeia(id);
+    await DB.deleteIdeia(id);
     Toast.show('Ideia excluída', 'info');
     Views.ideias();
   },
 
-  mover(id, novoStatus) {
-    const i = DB.getIdeias().find(x => x.id === id);
+  async mover(id, novoStatus) {
+    const ideias = await DB.getIdeias();
+    const i = ideias.find(x => x.id === id);
     if (!i) return;
-    DB.updateIdeia({ ...i, status: novoStatus });
+    await DB.updateIdeia({ ...i, status: novoStatus });
     Toast.show(`Ideia movida para ${novoStatus}`, 'info');
     Views.ideias();
   },
 
-  votar(id) {
-    const i = DB.getIdeias().find(x => x.id === id);
+  async votar(id) {
+    const ideias = await DB.getIdeias();
+    const i = ideias.find(x => x.id === id);
     if (!i) return;
-    DB.updateIdeia({ ...i, votos: (i.votos||0) + 1 });
+    await DB.updateIdeia({ ...i, votos: (i.votos||0) + 1 });
     Views.ideias();
   },
 };

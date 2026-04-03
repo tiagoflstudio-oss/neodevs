@@ -13,14 +13,14 @@ const PerfilCtrl = {
       </form>`);
   },
 
-  salvar(e) {
+  async salvar(e) {
     e.preventDefault();
     const u = { ...Auth.currentUser };
     u.nome = document.getElementById('pf-nome').value.trim();
     u.email = document.getElementById('pf-email').value.trim();
     const nova = document.getElementById('pf-senha').value;
     if (nova) u.senha = nova;
-    DB.updateUser(u);
+    await DB.updateUser(u);
     Auth.currentUser = u;
     DB.setSessao(u.id);
     document.getElementById('topbar-avatar').textContent = u.avatar;
@@ -30,9 +30,9 @@ const PerfilCtrl = {
     Views.perfil();
   },
 
-  setAvatar(av) {
+  async setAvatar(av) {
     const u = { ...Auth.currentUser, avatar: av };
-    DB.updateUser(u);
+    await DB.updateUser(u);
     Auth.currentUser = u;
     document.getElementById('topbar-avatar').textContent = av;
     Toast.show('Avatar atualizado!', 'success');

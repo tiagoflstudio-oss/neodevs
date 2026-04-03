@@ -11,7 +11,7 @@ const EquipeCtrl = {
       </form>`);
   },
 
-  salvar(e) {
+  async salvar(e) {
     e.preventDefault();
     const nome = document.getElementById('eq-nome').value.trim();
     const desc = document.getElementById('eq-desc').value.trim();
@@ -26,8 +26,8 @@ const EquipeCtrl = {
       criado_em: DB.now()
     };
     
-    DB.addEquipe(equipe);
-    DB.addMembro({ id: DB.uid(), equipe_id: equipe.id, usuario_id: Auth.currentUser.id, funcao: 'dono' });
+    await DB.addEquipe(equipe);
+    await DB.addMembro({ id: DB.uid(), equipe_id: equipe.id, usuario_id: Auth.currentUser.id, funcao: 'dono' });
     
     Toast.show('Equipe criada! Código: ' + codigo, 'success');
     Modal.close();

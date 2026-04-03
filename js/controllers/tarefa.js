@@ -1,6 +1,6 @@
 const TarefaCtrl = {
-  novo() {
-    const projetos = DB.getProjetos();
+  async novo() {
+    const projetos = await DB.getProjetos();
     const projOpts = projetos.map(p => `<option value="${p.id}">${escHtml(p.titulo)}</option>`).join('');
     Modal.open('Nova Tarefa', `
       <form class="modal-form" onsubmit="TarefaCtrl.salvar(event)">
@@ -33,55 +33,58 @@ const TarefaCtrl = {
       </form>`);
   },
 
-  edit(id) {
-    const t = DB.getTarefas().find(x => x.id === id);
+  async edit(id) {
+    const tarefas = await DB.getTarefas();
+    const t = tarefas.find(x => x.id === id);
     if (!t) return;
-    this.novo();
+    await this.novo();
     document.getElementById('t-id').value = id;
     document.getElementById('t-titulo').value = t.titulo;
     document.getElementById('t-desc').value = t.descricao;
-    document.getElementById('t-proj').value = t.projetoId || '';
+    document.getElementById('t-proj').value = t.projeto_id || '';
     document.getElementById('t-prior').value = t.prioridade;
     document.getElementById('t-status').value = t.status;
     document.getElementById('t-prazo').value = t.prazo || '';
     document.getElementById('modal-title').textContent = 'Editar Tarefa';
   },
 
-  salvar(e) {
+  async salvar(e) {
     e.preventDefault();
     const id = document.getElementById('t-id').value;
     const data = {
       titulo: document.getElementById('t-titulo').value.trim(),
       descricao: document.getElementById('t-desc').value.trim(),
-      projetoId: document.getElementById('t-proj').value,
+      projeto_id: document.getElementById('t-proj').value,
       prioridade: document.getElementById('t-prior').value,
       status: document.getElementById('t-status').value,
       prazo: document.getElementById('t-prazo').value,
-      responsavelId: Auth.currentUser.id,
+      responsavel_id: Auth.currentUser.id,
     };
     if (id) {
-      const ex = DB.getTarefas().find(x => x.id === id);
-      DB.updateTarefa({ ...ex, ...data });
+      const tarefas = await DB.getTarefas();
+      const ex = tarefas.find(x => x.id === id);
+      await DB.updateTarefa({ ...ex, ...data });
       Toast.show('Tarefa atualizada!', 'success');
     } else {
-      DB.addTarefa({ id: DB.uid(), criadoEm: DB.now(), ...data });
+      await DB.addTarefa({ id: DB.uid(), criado_em: DB.now(), ...data });
       Toast.show('Tarefa criada! ✅', 'success');
     }
     Modal.close();
     Views.tarefas();
   },
 
-  del(id) {
+  async del(id) {
     if (!confirm('Excluir esta tarefa?')) return;
-    DB.deleteTarefa(id);
+    await DB.deleteTarefa(id);
     Toast.show('Tarefa excluída', 'info');
     Views.tarefas();
   },
 
-  mover(id, novoStatus) {
-    const t = DB.getTarefas().find(x => x.id === id);
+  async mover(id, novoStatus) {
+    const tarefas = await DB.getTarefas();
+    const t = tarefas.find(x => x.id === id);
     if (!t) return;
-    DB.updateTarefa({ ...t, status: novoStatus });
+    await DB.updateTarefa({ ...t, status: novoStatus });
     Toast.show(`Tarefa movida para ${novoStatus}`, 'info');
     Views.tarefas();
   },
