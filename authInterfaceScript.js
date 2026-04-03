@@ -7,6 +7,19 @@ import {
 const loginForm = document.getElementById('login-form')
 const signupForm = document.getElementById('signup-form')
 const messageEl = document.getElementById('message')
+let currentTipo = 'dev'
+
+function setTipo(tipo) {
+  currentTipo = tipo
+  document.getElementById('tipo-dev').style.border = tipo === 'dev' ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)'
+  document.getElementById('tipo-dev').style.background = tipo === 'dev' ? 'rgba(124,58,237,0.2)' : 'transparent'
+  document.getElementById('tipo-cliente').style.border = tipo === 'cliente' ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)'
+  document.getElementById('tipo-cliente').style.background = tipo === 'cliente' ? 'rgba(124,58,237,0.2)' : 'transparent'
+  document.getElementById('signup-type').value = tipo
+}
+
+document.getElementById('tipo-dev').addEventListener('click', () => setTipo('dev'))
+document.getElementById('tipo-cliente').addEventListener('click', () => setTipo('cliente'))
 
 function showMessage(msg, isError = false) {
   messageEl.textContent = msg
@@ -46,7 +59,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 document.getElementById('btn-signup').addEventListener('click', async () => {
   const email = document.getElementById('signup-email').value.trim()
   const password = document.getElementById('signup-password').value.trim()
-  const userType = document.getElementById('signup-type').value
+  const userType = currentTipo
 
   if (!email || !password) {
     showMessage('Preencha email e senha', true)

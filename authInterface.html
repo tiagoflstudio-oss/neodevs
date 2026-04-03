@@ -1,23 +1,36 @@
 <!-- Auth Interface -->
 <div id="auth-root" style="max-width:320px;margin:0 auto;padding:20px;">
+  <h2 style="text-align:center;margin-bottom:20px;">DevHub</h2>
+  
+  <div class="tipo-selector" style="display:flex;gap:10px;margin-bottom:20px;">
+    <button class="tipo-btn active" id="tipo-dev" style="flex:1;padding:15px;border:2px solid #7c3aed;border-radius:10px;background:rgba(124,58,237,0.2);color:#fff;cursor:pointer;">
+      <div style="font-size:24px;">💻</div>
+      <div style="font-weight:600;">Sou Dev</div>
+      <div style="font-size:12px;opacity:0.7;">Quero trabalhar</div>
+    </button>
+    <button class="tipo-btn" id="tipo-cliente" style="flex:1;padding:15px;border:2px solid rgba(255,255,255,0.2);border-radius:10px;background:transparent;color:#fff;cursor:pointer;">
+      <div style="font-size:24px;">🏢</div>
+      <div style="font-weight:600;">Sou Cliente</div>
+      <div style="font-size:12px;opacity:0.7;">Quero contratar</div>
+    </button>
+  </div>
+
   <div id="login-form">
-    <h2>Login</h2>
-    <input id="login-email" type="email" placeholder="Email" required style="width:100%;padding:10px;margin:10px 0;"/>
-    <input id="login-password" type="password" placeholder="Senha" required style="width:100%;padding:10px;margin:10px 0;"/>
-    <button id="btn-login" style="width:100%;padding:10px;background:#7c3aed;color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;">Entrar</button>
-    <p style="margin-top:10px;text-align:center;">Não tem conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
+    <input id="login-email" type="email" placeholder="Email" required style="width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;"/>
+    <input id="login-password" type="password" placeholder="Senha" required style="width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;"/>
+    <button id="btn-login" style="width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Entrar</button>
+    <p style="margin-top:15px;text-align:center;">Não tem conta? <a href="#" id="link-to-signup">Cadastre-se</a></p>
   </div>
 
   <div id="signup-form" style="display:none">
-    <h2>Cadastro</h2>
-    <input id="signup-email" type="email" placeholder="Email" required style="width:100%;padding:10px;margin:10px 0;"/>
-    <input id="signup-password" type="password" placeholder="Senha" required style="width:100%;padding:10px;margin:10px 0;"/>
-    <select id="signup-type" style="width:100%;padding:10px;margin:10px 0;">
+    <input id="signup-email" type="email" placeholder="Email" required style="width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;"/>
+    <input id="signup-password" type="password" placeholder="Senha (mín 6 caracteres)" required style="width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#fff;"/>
+    <select id="signup-type" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#121217;color:#fff;">
       <option value="dev">Desenvolvedor</option>
       <option value="cliente">Cliente</option>
     </select>
-    <button id="btn-signup" style="width:100%;padding:10px;background:#7c3aed;color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;">Cadastrar</button>
-    <p style="margin-top:10px;text-align:center;">Já tem conta? <a href="#" id="link-to-login">Faça login</a></p>
+    <button id="btn-signup" style="width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Cadastrar</button>
+    <p style="margin-top:15px;text-align:center;">Já tem conta? <a href="#" id="link-to-login">Faça login</a></p>
   </div>
 </div>
 <div id="message" style="max-width:320px;margin:10px auto;text-align:center;font-weight:700;font-size:15px"></div>
@@ -32,6 +45,19 @@ import {
 const loginForm = document.getElementById('login-form')
 const signupForm = document.getElementById('signup-form')
 const messageEl = document.getElementById('message')
+let currentTipo = 'dev'
+
+function setTipo(tipo) {
+  currentTipo = tipo
+  document.getElementById('tipo-dev').style.border = tipo === 'dev' ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)'
+  document.getElementById('tipo-dev').style.background = tipo === 'dev' ? 'rgba(124,58,237,0.2)' : 'transparent'
+  document.getElementById('tipo-cliente').style.border = tipo === 'cliente' ? '2px solid #7c3aed' : '2px solid rgba(255,255,255,0.2)'
+  document.getElementById('tipo-cliente').style.background = tipo === 'cliente' ? 'rgba(124,58,237,0.2)' : 'transparent'
+  document.getElementById('signup-type').value = tipo
+}
+
+document.getElementById('tipo-dev').addEventListener('click', () => setTipo('dev'))
+document.getElementById('tipo-cliente').addEventListener('click', () => setTipo('cliente'))
 
 function showMessage(msg, isError = false) {
   messageEl.textContent = msg
@@ -71,7 +97,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 document.getElementById('btn-signup').addEventListener('click', async () => {
   const email = document.getElementById('signup-email').value.trim()
   const password = document.getElementById('signup-password').value.trim()
-  const userType = document.getElementById('signup-type').value
+  const userType = currentTipo
 
   if (!email || !password) {
     showMessage('Preencha email e senha', true)
